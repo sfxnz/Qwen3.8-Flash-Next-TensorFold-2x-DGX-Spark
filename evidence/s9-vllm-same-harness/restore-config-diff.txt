@@ -1,0 +1,12 @@
+# vLLM sibling container config before the TensorFold window (docker inspect, 2026-10-02T14:05Z)
+# against after its restore (2026-10-02T17:4xZ). Values are hashed, not printed; equal hash = equal value.
+spark1: image equal: True (vllm/vllm-openai:v0.30.0-aarch64@sha256:4864d46625cbc3307623e29ac742030655e27249feba7b97ec925ce4cc4dfb56)
+spark1: env   sha c2a2a1cba22d4865 vs c2a2a1cba22d4865: True
+spark1: args  sha 83585df0cfdda8d4 vs 83585df0cfdda8d4: True
+spark1: mount destinations sha 57970e7eff063de3 vs 57970e7eff063de3: True
+spark1: mount source file names equal: True (head sources moved from the deleted -plan worktree to the main checkout at d66a95e)
+spark2: image equal: True (vllm/vllm-openai:v0.30.0-aarch64@sha256:4864d46625cbc3307623e29ac742030655e27249feba7b97ec925ce4cc4dfb56)
+spark2: env   sha 55dcccfb542b1bcd vs 55dcccfb542b1bcd: True
+spark2: args  sha 640ab40a77e5890b vs 640ab40a77e5890b: True
+spark2: mount destinations sha 4f2c3a90569d2cab vs 4f2c3a90569d2cab: True
+spark2: mount source file names equal: True (head sources moved from the deleted -plan worktree to the main checkout at d66a95e)

@@ -13,6 +13,8 @@ ARG TF_PATCH_SHA=none
 # xgrammar there raises out of its follow loop and leaves rank 0 hanging in NCCL.
 ARG XGRAMMAR=xgrammar==0.2.8
 COPY patches/ /opt/tensorfold-patches/
+# Versions the measured images resolved; a rebuild installs the same ones (base pins come from NGC).
+COPY constraints.txt /opt/tensorfold-constraints.txt
 # torch and triton come from the base image; fail the build if pip replaces them.
 RUN pip freeze | grep -iE '^(torch|triton) @ ' > /opt/base-pins.txt \
  && git clone --quiet --filter=blob:none "${TF_REPO}" /opt/tensorfold-src \
@@ -20,7 +22,7 @@ RUN pip freeze | grep -iE '^(torch|triton) @ ' > /opt/base-pins.txt \
  && if [ "${TF_PATCH}" != none ]; then \
       echo "${TF_PATCH_SHA}  /opt/tensorfold-patches/${TF_PATCH#patches/}" | sha256sum -c - \
       && git -C /opt/tensorfold-src apply --index "/opt/tensorfold-patches/${TF_PATCH#patches/}"; fi \
- && env -u HF_TOKEN pip install --no-cache-dir /opt/tensorfold-src "${XGRAMMAR}" \
+ && env -u HF_TOKEN pip install --no-cache-dir -c /opt/tensorfold-constraints.txt /opt/tensorfold-src "${XGRAMMAR}" \
  && pip freeze | grep -iE '^(torch|triton) @ ' | diff - /opt/base-pins.txt \
  && python -c "import sys, tensorfold; assert sys.version_info >= (3, 11); print('tensorfold', tensorfold.__version__)" \
  && python -c "import xgrammar, transformers; from transformers import PreTrainedTokenizerFast" \

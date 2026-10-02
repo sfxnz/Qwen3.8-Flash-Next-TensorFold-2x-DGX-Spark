@@ -30,7 +30,7 @@ def load(d: Path) -> dict:
             out[key + " agg"] = (r["median_agg_tok_s"], None)
         out[key + " ttft"] = (r["median_ttft_s"], None)
     for c in summary(d / "bench-cells.out") or []:
-        out[c["cell"]] = (c["median_decode_tok_s"], c["shas"][0])
+        out[c["cell"]] = (c["median_decode_tok_s"], c["shas"][0] if len(set(c["shas"])) == 1 else "mixed")
     acc = d / "accept-frozen.txt"
     if acc.is_file():
         try:
@@ -58,7 +58,7 @@ def main() -> int:
                 cells.append("-")
                 continue
             delta = (v[0] / base[0] - 1) * 100
-            same = "" if v[1] is None or base[1] is None else (" =" if v[1] == base[1] else " ≠")
+            same = "" if v[1] is None or base[1] is None else (" =" if v[1] == base[1] != "mixed" else " ≠")
             cells.append(f"{v[0]:.3g} ({delta:+.1f}%){same}")
         print(f"| {k} | " + " | ".join(cells) + " |")
     return 0

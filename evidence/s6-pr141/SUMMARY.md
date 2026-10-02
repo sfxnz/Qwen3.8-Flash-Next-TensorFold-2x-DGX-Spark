@@ -1,6 +1,6 @@
 # Session 6: two-rank --parallel (upstream PR #141 ported onto 0.6.2) (2026-10-02)
 
-**Result.** Shipped as the opt-in `PROFILE=concurrent`, not the default. With 8 users the aggregate is 2.3-4.8x the serial default, and the slowest first token drops from 16.6-22.0 s to 0.16-0.20 s. Every concurrent reply equals its solo run and its `"draft": false` run (bench_concurrent `--alone --serial`, 0 unequal in every cell). The cost is lone-request speed: −5 to −8% on repeated prompts (bench_concurrent c=1), −9 to −16% on the frozen-ruler and longer cells, and −29% on distinct prompts (`tools/bench_distinct.py`).
+**Result.** Shipped as the opt-in `PROFILE=concurrent`, not the default. With 8 users the aggregate is 2.3-4.8x the serial default, and the slowest first token drops from 16.6-22.0 s to 0.16-0.20 s. Every concurrent reply equals its solo run and its `"draft": false` run (bench_concurrent `--alone --serial`, 0 unequal in every cell). The cost is lone-request speed: −5 to −8% on repeated prompts (bench_concurrent c=1), −8 to −16% on the frozen-ruler and longer cells, and −29% on distinct prompts (`tools/bench_distinct.py`).
 
 ## The patch
 
@@ -19,7 +19,7 @@ Each commit went through adversarial review (rank desync, one-GPU regression, ex
 
 ## Why lone requests are slower
 
-The lone-slot commits did not move it (P8-D15 → P8-D15-v2 is within noise). Every round on two ranks is planned on rank 0 in host code, sent to rank 1 over TCP and agreed by a digest all-gather before the model's collectives. At ~2 tokens per round on prose that adds about 10 ms to a ~26 ms round. Removing it needs a different two-rank protocol, not a recipe patch.
+Not isolated. The lone-slot commits did not move it (P8-D15 → P8-D15-v2 is within noise). Repeated prompts speed up run to run on the profile (frozen prose c=1 in `P8-D15-v2/bench-frozen.out`: 42.0, 59.3, 66.0 tok/s; per `requests.log` 43.3 → 30.7 → 27.5 ms per round against 26.0 serial), so part of it is per-prompt warm-up in the concurrent decoder, for example the lone-graph slot recapturing graphs when the slot holds another conversation's kept prompt (left open in the port; see `docker/patches/README.md`). Every two-rank round also adds rank 0's host planning, a TCP message and a digest all-gather; that cost was not measured on its own.
 
 Distinct-prompt lone bench (`tools/bench_distinct.py`, 12 prompts, 256 tokens, greedy):
 - serial default (`../s7-default/bench-distinct.out`): `SUMMARY {"n": 12, "median_decode_tok_s": 73.91493612918684, "median_ttft_s": 0.10516041750088334}`
@@ -30,7 +30,7 @@ Distinct-prompt lone bench (`tools/bench_distinct.py`, 12 prompts, 256 tokens, g
 
 Generated from `../s7-default/concurrent.out`, `P8-D15-v2/concurrent.out` and `P8-D6-v2/concurrent.out`:
 
-| Prompt | Sampling | Users | Serial default: aggregate tok/s (worst TTFT) | PROFILE=concurrent, depth 15 | depth 6 (profile default) |
+| Prompt | Sampling | Users | Serial default: aggregate tok/s (worst TTFT) | PROFILE=concurrent, depth 15 | depth 6 (`MTP_DRAFTS=6`, throughput only) |
 |---|---|---:|---:|---:|---:|
 | chat | greedy | 1 | 89.9 (0.06 s) | 83.8 (0.06 s) | 85.0 (0.06 s) |
 | chat | greedy | 2 | 88.3 (2.99 s) | 151.3 (0.07 s) | - |

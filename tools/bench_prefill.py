@@ -9,6 +9,7 @@ requests follow, streamed, thinking off, greedy:
           boundary on a server that keeps one there, and times natural-prose decode at that context.
 Reports prompt tokens (from usage), cold TTFT, cold prefill tok/s = prompt tokens / TTFT, resend TTFT,
 story TTFT and story decode tok/s = (completion - 1) / (last - first content token).
+A throwaway prompt of the shortest length runs first and is not reported.
 Prints `ROW {json}` per length and `SUMMARY [...]`.
 
   python3 tools/bench_prefill.py --lengths 8192 32768 65536 131072
@@ -76,6 +77,9 @@ def main():
     p.add_argument("--decode-tokens", type=int, default=256)
     a = p.parse_args()
     rows = []
+    # One throwaway long prompt first, sharing no filler with the measured ones, so a server's first-use
+    # cost (kernel autotune, graph capture for long shapes) does not land in the first cold row.
+    one(a.url, a.model, f"Warm-up {a.run}.\n" + filler(-1 - a.run, min(a.lengths)), COLD_Q, 1)
     for n in a.lengths:
         prompt = f"Run {a.run}, length {n}.\n" + filler(n * 1000 + a.run, n)
         cold = one(a.url, a.model, prompt, COLD_Q, 16)

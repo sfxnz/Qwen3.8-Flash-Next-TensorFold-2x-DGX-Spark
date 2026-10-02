@@ -64,6 +64,11 @@ NATIVE_CONTEXT=262144
 MAX_MTP_DRAFTS=15
 # The only patch that serves --parallel on two ranks (docker/patches/; README "Concurrency").
 PARALLEL_PATCH=patches/pr141-on-0.6.2.patch
+# sha256 of every shipped patch, the bytes the published numbers were measured with (recipe.yaml
+# engine.patches; tests/ checks the files). A regenerated patch needs a new pin and new evidence.
+declare -A PATCH_PINS=(
+  [patches/pr141-on-0.6.2.patch]=03027e4f22233d5c4790ea56c7e5a0c5ec85d11e891a3ca238b2edf03ff51571
+)
 
 die() {
   echo "$*" >&2
@@ -97,6 +102,8 @@ else
   else
     die "TF_PATCH=$TF_PATCH must be none or a file under docker/patches/."
   fi
+  [[ -n "${PATCH_PINS[$TF_PATCH]:-}" ]] || die "TF_PATCH=$TF_PATCH has no pin in run.sh PATCH_PINS (docker/patches/README.md)."
+  [[ "$TF_PATCH_SHA" == "${PATCH_PINS[$TF_PATCH]}" ]] || die "TF_PATCH=$TF_PATCH has sha256 $TF_PATCH_SHA, not the pinned ${PATCH_PINS[$TF_PATCH]}. Never edit a patch by hand (docker/patches/README.md)."
 fi
 
 # --- topology. TensorFold runs one rank per machine, at most two (cli_args.py --tp choices 1/2).
@@ -123,19 +130,23 @@ for kv in $EXTRA_ENV; do
 done
 
 # --- EXTRA_ARGS must not re-set a flag run.sh builds; argparse keeps the last value, so a duplicate
-# would bypass the guard on its variable or desynchronise the two ranks.
+# would bypass the guard on its variable or desynchronise the two ranks. TensorFold's parser expands
+# unambiguous prefixes (--paral means --parallel), so any prefix of a guarded flag is refused too.
+OWNED_FLAGS="--tp --rank --master --master-port --host --port --name --context --kv-dtype --mtp-drafts --mtp-confidence --parallel --thinking --no-thinking --max-tokens --no-update-check --no-drafts"
+VISION_FLAGS="--vision --vision-urls --vision-max-images"
+UNUSED_FLAGS="--prefill-fp8 --drafter --ple-on-ssd --ssd-experts"
 for w in $EXTRA_ARGS; do
-  case "${w%%=*}" in
-    --tp | --rank | --master | --master-port | --host | --port | --name | --context | --kv-dtype | --mtp-drafts | --mtp-confidence | --parallel | --thinking | --no-thinking | --max-tokens | --no-update-check | --no-drafts)
-      die "EXTRA_ARGS sets $w, which run.sh passes itself. Use TP, PORT, MASTER_PORT, SERVED_NAME, CONTEXT, KV_DTYPE, MTP_DRAFTS (0 = no drafts), MTP_CONFIDENCE, PARALLEL, THINKING or MAX_TOKENS instead."
-      ;;
-    --vision | --vision-urls | --vision-max-images)
-      die "EXTRA_ARGS sets $w: TensorFold serves Flash Next images on one GPU with --parallel 2 or more only (engine.py:50-51)."
-      ;;
-    --prefill-fp8 | --drafter | --ple-on-ssd | --ssd-experts)
-      die "EXTRA_ARGS sets $w: refused or unused for the MLX 4-bit checkpoint on CUDA (README 'Not supported')."
-      ;;
-  esac
+  f="${w%%=*}"
+  [[ "$f" == --?* ]] || continue
+  for g in $OWNED_FLAGS; do
+    [[ "$g" == "$f"* ]] && die "EXTRA_ARGS sets $w (argparse reads it as $g), which run.sh passes itself. Use TP, PORT, MASTER_PORT, SERVED_NAME, CONTEXT, KV_DTYPE, MTP_DRAFTS (0 = no drafts), MTP_CONFIDENCE, PARALLEL, THINKING or MAX_TOKENS instead."
+  done
+  for g in $VISION_FLAGS; do
+    [[ "$g" == "$f"* ]] && die "EXTRA_ARGS sets $w ($g): TensorFold serves Flash Next images on one GPU with --parallel 2 or more only (engine.py:50-51)."
+  done
+  for g in $UNUSED_FLAGS; do
+    [[ "$g" == "$f"* ]] && die "EXTRA_ARGS sets $w ($g): refused or unused for the MLX 4-bit checkpoint on CUDA (README 'Not supported')."
+  done
 done
 
 API_HOST=0.0.0.0
@@ -198,7 +209,7 @@ ensure_image() {
     have="$(image_sha)"
   fi
   [[ "$have" == "$TF_SHA $TF_PATCH_SHA" ]] || die "Image $IMAGE carries TensorFold/patch '${have:-unknown}', not '$TF_SHA $TF_PATCH_SHA' (TF_SHA, sha256 of TF_PATCH). Rebuild it or set IMAGE to the matching tag."
-  log "Image $IMAGE (TensorFold $TF_SHA, patch $TF_PATCH)"
+  log "Image $IMAGE (TensorFold $TF_SHA, patch $TF_PATCH sha256 $TF_PATCH_SHA)"
 }
 
 snapshot_complete() {
@@ -252,7 +263,7 @@ ensure_weights() {
   [[ -n "$HF" ]] || die "No hf CLI on PATH and snapshot $SNAPSHOT is incomplete."
   export HF_HUB_DISABLE_XET
   log "Downloading $MODEL revision $SNAPSHOT_SHA (resumes under $HF_CACHE; about 113 GB)"
-  "$HF" download "$MODEL" --revision "$SNAPSHOT_SHA"
+  "$HF" download "$MODEL" --revision "$SNAPSHOT_SHA" --cache-dir "$HF_CACHE/hub"
   snapshot_complete || die "Snapshot still incomplete after download."
 }
 
@@ -428,7 +439,8 @@ sync_worker_image() {
   local local_id remote_id
   ensure_image
   local_id="$(docker image inspect -f '{{.Id}}' "$IMAGE")"
-  remote_id="$(ssh -o BatchMode=yes "$WORKER_HOST" "docker image inspect -f '{{.Id}}' '$IMAGE' 2>/dev/null || true" | tr -d '[:space:]')"
+  remote_id="$(ssh -o BatchMode=yes -o ConnectTimeout=5 "$WORKER_HOST" "docker image inspect -f '{{.Id}}' '$IMAGE' 2>/dev/null || true" | tr -d '[:space:]')" ||
+    die "Lost SSH to $WORKER_HOST while comparing image IDs."
   [[ "$remote_id" == "$local_id" ]] && return 0
   log "Copying $IMAGE to $WORKER_HOST (worker has ${remote_id:-none}, head has $local_id)"
   docker save "$IMAGE" | ssh "$WORKER_HOST" docker load >/dev/null
@@ -479,6 +491,7 @@ if [[ "$ORCHESTRATE" == "auto" && "$ROLE" == "head" ]]; then
     fi
     mkdir -p "$STATE_DIR"
     printf '%s\n' "$WORKER_HOST" >"$STATE_DIR/worker_host"
+    ensure_weights                 # the head's own snapshot, before rank 1 starts and waits on it
     sync_worker_image
     log "Starting rank 1 on $WORKER_HOST first"
     scp -q "$0" "${WORKER_HOST}:/tmp/${CONTAINER_NAME}-run.sh"

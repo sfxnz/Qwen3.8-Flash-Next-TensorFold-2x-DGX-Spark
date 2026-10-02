@@ -1,5 +1,5 @@
 # Vendored from https://github.com/ashhart/TensorFold tools/bench_concurrent.py @ 56e2e3ec55bc0ae1d7d5158c4fa2c79a3567ab21 (v0.6.2).
-# Apache-2.0, Copyright TensorFold contributors. Unmodified below this header.
+# Written before TensorFold 0.6.0: MIT (LICENSES/MIT-TensorFold.txt) and Apache-2.0 (LICENSES/Apache-2.0-TensorFold.txt), Copyright (c) 2026 TensorFold contributors. Unmodified below this header.
 """Decode speed of an OpenAI-compatible server under concurrent requests (bench_openai's prompts and settings).
 
 Default: four cells (code and chat prompts, sampled and greedy). In each cell N requests of the same prompt start

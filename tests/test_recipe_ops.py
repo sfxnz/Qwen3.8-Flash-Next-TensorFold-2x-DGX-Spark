@@ -116,10 +116,28 @@ class GuardTests(unittest.TestCase):
             env.update(VALIDATE_ONLY="1", TF_PATCH="patches/pr141-on-0.6.2.patch", PARALLEL="8")
             proc = subprocess.run([str(copy)], capture_output=True, text=True, env=env, check=False)
             self.assertNotEqual(proc.returncode, 0)
-            env.update(ROLE="worker", TF_PATCH_SHA="a" * 64)
+            pin = re.search(r"\[patches/pr141-on-0.6.2.patch\]=([0-9a-f]{64})", _read("run.sh")).group(1)
+            env.update(ROLE="worker", TF_PATCH_SHA=pin)
             proc = subprocess.run([str(copy)], capture_output=True, text=True, env=env, check=False)
             self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertRegex(_read("run.sh"), r"FORWARD_VARS=\([^)]*\bTF_PATCH_SHA\b")
+
+    def test_shipped_patch_matches_its_pin(self) -> None:
+        run = _read("run.sh")
+        pins = dict(re.findall(r"^\s+\[(patches/[^\]]+)\]=([0-9a-f]{64})$", run, re.M))
+        self.assertIn("patches/pr141-on-0.6.2.patch", pins)
+        for rel, sha in pins.items():
+            self.assertEqual(hashlib.sha256((ROOT / "docker" / rel).read_bytes()).hexdigest(), sha, rel)
+            self.assertIn(sha, _read("recipe.yaml"), rel)
+        with tempfile.TemporaryDirectory() as tmp:
+            copy = Path(tmp) / "run.sh"
+            copy.write_text(run)
+            copy.chmod(0o755)
+            env = {k: v for k, v in os.environ.items() if k not in OVERRIDES}
+            env.update(VALIDATE_ONLY="1", ROLE="worker", TF_PATCH="patches/pr141-on-0.6.2.patch", TF_PATCH_SHA="b" * 64)
+            proc = subprocess.run([str(copy)], capture_output=True, text=True, env=env, check=False)
+            self.assertNotEqual(proc.returncode, 0)
+            self.assertIn("not the pinned", proc.stderr)
 
     def test_patch_must_exist_under_docker_patches(self) -> None:
         self.refused("must be none or a file under docker/patches/", TF_PATCH="patches/nope.patch")
@@ -132,6 +150,12 @@ class GuardTests(unittest.TestCase):
         self.refused("on one GPU with --parallel 2", EXTRA_ARGS="--vision")
         self.refused("refused or unused", EXTRA_ARGS="--prefill-fp8")
         self.accepted(EXTRA_ARGS="--temperature 0.6 --alias qwen")
+
+    def test_extra_args_prefixes_are_refused(self) -> None:
+        # TensorFold's argparse expands unambiguous prefixes: --paral is --parallel.
+        for w in ("--paral 8", "--hos 0.0.0.0", "--mtp-d 20", "--con=1024", "--vis", "--prefill"):
+            self.refused("EXTRA_ARGS sets", EXTRA_ARGS=w)
+        self.accepted(EXTRA_ARGS="--temperature 0.6 --top-p 0.9 --min-p 0.05 --reasoning-effort low --alias q")
 
     def test_extra_env_is_key_value(self) -> None:
         self.refused("is not KEY=VALUE", EXTRA_ENV="NCCL_PROTO")
@@ -148,8 +172,9 @@ class GuardTests(unittest.TestCase):
     def test_every_refusal_precedes_validate_only_exit(self) -> None:
         run = _read("run.sh")
         exit_at = run.index('if [[ "${VALIDATE_ONLY:-0}" == "1" ]]')
-        for needle in ("die \"TP=", "exceeds the native window", "serves one request at a time", "which run.sh passes itself"):
-            self.assertLess(run.find(needle), exit_at, needle)
+        for needle in ('die "TP=', "exceeds the native window", "needs TF_PATCH=", "which run.sh passes itself",
+                       "has no pin in run.sh PATCH_PINS"):
+            self.assertLess(run.index(needle), exit_at, needle)
 
 
 class ServeArgsTests(unittest.TestCase):

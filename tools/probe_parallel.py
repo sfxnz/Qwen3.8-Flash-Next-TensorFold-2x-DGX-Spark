@@ -80,7 +80,8 @@ def main():
         t.start()
     for t in threads:
         t.join()
-    leave_ok = all(got.get(i) == solo[i] for i in range(1, len(PROMPTS)))
+    # Client 0 must really have left (None), and the other three must equal their solo replies.
+    leave_ok = got.get(0) is None and all(got.get(i) == solo[i] for i in range(1, len(PROMPTS)))
     print("leave", json.dumps(got), "PASS" if leave_ok else "FAIL")
     ok &= leave_ok
 

@@ -1,0 +1,7 @@
+# Disk footprint, measured 2026-10-02T18:11:14Z on spark1
+$ du -sbL ~/.cache/huggingface/hub/models--TensorFold--Qwen3.8-Flash-Next-MLX-4bit-MTP/snapshots/2b170fa6309d5d1ee380b35636075fac7945f286
+113233048033	~/.cache/huggingface/hub/models--TensorFold--Qwen3.8-Flash-Next-MLX-4bit-MTP/snapshots/2b170fa6309d5d1ee380b35636075fac7945f286
+$ docker image inspect -f '{{.Size}}' tf-qwen38-flashnext:0.6.2
+24517145296
+$ du -sb $TF_CACHE/56e2e3e... (kernel builds)
+154556384	$TF_CACHE/56e2e3ec55bc0ae1d7d5158c4fa2c79a3567ab21

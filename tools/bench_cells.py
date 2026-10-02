@@ -100,12 +100,17 @@ def main():
                 "median_ttft_s": statistics.median(r["ttft_s"] for r in runs),
                 "median_completion_tokens": statistics.median(r["completion_tokens"] for r in runs),
                 "shas": [r["sha"] for r in runs], "runs": runs}
+        # Greedy replies must repeat byte for byte; a sampled cell carries its seed, so it should too.
+        cell["repeat_ok"] = len(set(cell["shas"])) == 1
         if h0 and h1 and h1.get("rounds_total", 0) > h0.get("rounds_total", 0):
             dr = h1["rounds_total"] - h0["rounds_total"]
             cell["tokens_per_round"] = round(1 + (h1["accepted_total"] - h0["accepted_total"]) / dr, 3)
         print("CELL " + json.dumps(cell), flush=True)
         summary.append({k: v for k, v in cell.items() if k != "runs"})
     print("SUMMARY " + json.dumps(summary, indent=1))
+    bad = [c["cell"] for c in summary if not c["repeat_ok"]]
+    if bad:
+        raise SystemExit(f"replies did not repeat across runs: {bad}")
 
 
 if __name__ == "__main__":

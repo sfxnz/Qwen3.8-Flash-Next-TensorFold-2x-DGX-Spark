@@ -7,7 +7,7 @@ for cfg in D6:6 D15:15 D6b:6 D15b:15; do
   id=${cfg%%:*}; d=${cfg##*:}; ev=evidence/s5-longctx/$id; mkdir -p "$ev"
   echo "$(date -u +%FT%TZ) $id MTP_DRAFTS=$d"
   ./stop.sh >"$ev/stop.log" 2>&1 </dev/null
-  if ! TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=$d ./run.sh >"$ev/boot.log" 2>&1 </dev/null; then
+  if ! TF_CACHE="${TF_CACHE:-$HOME/.cache/tensorfold-qwen38}" MTP_DRAFTS=$d ./run.sh >"$ev/boot.log" 2>&1 </dev/null; then
     echo "$id boot failed"; continue
   fi
   free -h >"$ev/free-before.txt"; ssh spark2 free -h >"$ev/free-before-spark2.txt" </dev/null

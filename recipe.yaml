@@ -22,6 +22,9 @@ engine:
   version: 0.6.2
   repo: https://github.com/ashhart/TensorFold
   commit: &tf_sha 56e2e3ec55bc0ae1d7d5158c4fa2c79a3567ab21
+  # sha256 of every shipped patch under docker/patches/ (run.sh PATCH_PINS must match; tests/ check the files).
+  patches:
+    pr141-on-0.6.2.patch: 03027e4f22233d5c4790ea56c7e5a0c5ec85d11e891a3ca238b2edf03ff51571
 
 hardware:
   shape: 2x DGX Spark (GB10)
@@ -85,12 +88,12 @@ measured:
   # The README decode table. One row per (phase, concurrency); a row's three numbers come from one
   # bench_decode.py run. evidence: the file under evidence/ that contains them, or null while there is none.
   decode:
-    conditions: streamed greedy, thinking off, max_tokens 200 (prose ends at EOS near 100), 3-run median; TensorFold 0.6.2 at TP=2, context 262144, kv bf16, MTP up to 15 drafts at confidence 0.70, 4.33 tokens per verify round; second gate on the boot (the first after a boot measured up to 5% lower while graphs for each context bucket are captured)
+    conditions: streamed greedy, thinking off, max_tokens 200 (prose ends at EOS near 100), 3-run median; TensorFold 0.6.2 at TP=2, context 262144, kv bf16, MTP up to 15 drafts at confidence 0.70, 4.33 tokens per verify round; second gate on the boot (the first gate on that boot measured up to 5.6% lower; s4's first-after-boot gate did not)
     units: {decode: tok/s per stream (median), aggregate: tok/s, ttft_p50: s}
     rows:
-      - {phase: prose, concurrency: 1, decode: 69.6, aggregate: 69.6, ttft_p50: 0.06, evidence: evidence/s7-default/rerun/bench-frozen.out}
+      - {phase: prose, concurrency: 1, decode: 69.6, aggregate: 69.6, ttft_p50: 0.05, evidence: evidence/s7-default/rerun/bench-frozen.out}
       - {phase: prose, concurrency: 2, decode: 70.0, aggregate: 92.1, ttft_p50: 0.78, evidence: evidence/s7-default/rerun/bench-frozen.out,
-         note: "TensorFold 0.6.2 serves one request at a time on two ranks. At c=2 the second stream waits for the first, which is its TTFT, and bench_decode's aggregate (tokens / (wall − median TTFT)) is not concurrent throughput. The --parallel profile serves both together (Concurrency)."}
+         note: "TensorFold 0.6.2 serves one request at a time on two ranks. At c=2 the second stream waits for the first, which is its TTFT, and bench_decode's aggregate (tokens / (wall − median TTFT)) is not concurrent throughput. TTFT p50 is the midpoint of the first stream's 0.05-0.06 s and the queued second stream's 1.51-1.53 s (prose) or 0.93-0.94 s (structured). The --parallel profile serves both together (Concurrency)."}
       - {phase: structured, concurrency: 1, decode: 249.5, aggregate: 249.3, ttft_p50: 0.07, evidence: evidence/s7-default/rerun/bench-frozen.out}
       - {phase: structured, concurrency: 2, decode: 246.8, aggregate: 317.5, ttft_p50: 0.49, evidence: evidence/s7-default/rerun/bench-frozen.out,
          note: "Same as note 1."}

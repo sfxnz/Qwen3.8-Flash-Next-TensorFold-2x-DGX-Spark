@@ -34,7 +34,7 @@ Humans read [README.md](README.md).
 ## Host memory safety
 
 - Keep `OOM_SCORE_ADJ=1000`, `MEMGUARD=1` and `--ulimit core=1`.
-- Per rank at 262144 bf16: TensorFold's startup estimate is 48.9 GiB on the GPU, plus the 29.8 GiB n-gram tables mlocked in host memory. About 62 GiB stays available per node after load (`evidence/s1-first-boot/`).
+- Per rank at 262144 bf16: TensorFold's startup estimate is 48.9 GiB on the GPU, plus the 29.8 GiB n-gram tables mlocked in host memory. About 58 GiB (spark1) / 61 GiB (spark2) stays available after load and benches (`evidence/s7-default/free-after*.txt`).
 - Before a heavy step (long-context needles, 128k prefill), run `free -h` on both nodes. Skip the step if spark1 MemAvailable < 6 GiB.
 
 ## Verify

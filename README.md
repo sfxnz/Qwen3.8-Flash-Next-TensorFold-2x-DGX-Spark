@@ -13,20 +13,20 @@ Pinned snapshot: `2b170fa6309d5d1ee380b35636075fac7945f286`. Engine credit: Tens
 `python3 bench_decode.py`, byte-identical to the vLLM sibling's frozen ruler (sha256 `6a9c64bd…`). Do not copy community tok/s into this table. Full gate pack: [`evidence/s7-default/`](evidence/s7-default/).
 
 <!-- BEGIN generated measured from recipe.yaml — edit recipe.yaml and run kit/render.py -->
-Conditions: streamed greedy, thinking off, max_tokens 200 (prose ends at EOS near 100), 3-run median; TensorFold 0.6.2 at TP=2, context 262144, kv bf16, MTP up to 15 drafts at confidence 0.70, 4.33 tokens per verify round; second gate on the boot (the first after a boot measured up to 5% lower while graphs for each context bucket are captured).
+Conditions: streamed greedy, thinking off, max_tokens 200 (prose ends at EOS near 100), 3-run median; TensorFold 0.6.2 at TP=2, context 262144, kv bf16, MTP up to 15 drafts at confidence 0.70, 4.33 tokens per verify round; second gate on the boot (the first gate on that boot measured up to 5.6% lower; s4's first-after-boot gate did not).
 
 | Phase | Concurrency | Decode tok/s (median per stream) | Aggregate tok/s | TTFT p50 |
 |---|---|---:|---:|---:|
-| prose | 1 | 69.6 | 69.6 | 0.06 s |
+| prose | 1 | 69.6 | 69.6 | 0.05 s |
 | prose (note 1) | 2 | 70.0 | 92.1 | 0.78 s |
 | structured | 1 | 249.5 | 249.3 | 0.07 s |
 | structured (note 2) | 2 | 246.8 | 317.5 | 0.49 s |
 
-1. TensorFold 0.6.2 serves one request at a time on two ranks. At c=2 the second stream waits for the first, which is its TTFT, and bench_decode's aggregate (tokens / (wall − median TTFT)) is not concurrent throughput. The --parallel profile serves both together (Concurrency).
+1. TensorFold 0.6.2 serves one request at a time on two ranks. At c=2 the second stream waits for the first, which is its TTFT, and bench_decode's aggregate (tokens / (wall − median TTFT)) is not concurrent throughput. TTFT p50 is the midpoint of the first stream's 0.05-0.06 s and the queued second stream's 1.51-1.53 s (prose) or 0.93-0.94 s (structured). The --parallel profile serves both together (Concurrency).
 2. Same as note 1.
 <!-- END generated measured -->
 
-The default MTP draft cap is 15 (TensorFold's own default is 6). Each verify round now emits 4.33 tokens on the frozen ruler instead of 3.56. Against depth 6 on the same day: structured +42-46%, JSON +10% and code +4%. Prose, long prose, multilingual text and sampled chat moved within ±1%, because the 70% confidence rule still stops a chain early on uncertain text. Greedy replies were byte-identical at every depth: drafting does not change the tokens ([`evidence/s4-depth/`](evidence/s4-depth/), ABAB against a fresh baseline). At 8k-131k context, depth 15 and depth 6 decode at the same speed ([`evidence/s5-longctx/`](evidence/s5-longctx/)).
+The default MTP draft cap is 15 (TensorFold's own default is 6). Each verify round now emits 4.33 tokens on the frozen ruler instead of 3.56. Against depth 6 on the same day: structured +42-46%, JSON +10% and code +4%. Prose, long prose, multilingual text and sampled chat moved within ±1%, because the 70% confidence rule still stops a chain early on uncertain text. Greedy replies were byte-identical at every depth: drafting does not change the tokens ([`evidence/s4-depth/`](evidence/s4-depth/), against a fresh baseline in the same sweep; depth 15 repeated in s7). At 8k-131k context, depth 15 and depth 6 decode at the same speed ([`evidence/s5-longctx/`](evidence/s5-longctx/)).
 
 ### Longer cells (c=1)
 
@@ -42,7 +42,7 @@ The default MTP draft cap is 15 (TensorFold's own default is 6). Each verify rou
 
 ### Long context
 
-`tools/bench_prefill.py`. The filler is the system message; three requests per length; greedy; thinking off; depth 15. [`evidence/s5-longctx/`](evidence/s5-longctx/) (two boots, D15 and D15b; they agree within 1%).
+`tools/bench_prefill.py`. The filler is the system message; three requests per length; greedy; thinking off; depth 15. [`evidence/s5-longctx/`](evidence/s5-longctx/) (two boots, D15 and D15b: cold prefill and decode within 1.1%, resend TTFT within 0.01 s).
 
 | Prompt tokens | Cold prefill | Cold TTFT | Identical resend TTFT | New question on the same system prompt, TTFT | Decode tok/s at that context (story, 256 tokens) |
 |---:|---:|---:|---:|---:|---:|
@@ -64,10 +64,10 @@ TensorFold keeps prompt states one token before a prompt's end and at message bo
 | `response_format` json_schema, strict | 30/30 | 30/30 |
 | Repeated word-4-grams over 64 × 512-token replies | 0.03% | 0.05% |
 | `reasoning_effort` unset / none / low / medium / xhigh | 5/5 | 5/5 |
-| Needles, 4k / 16k / 64k / 128k × 3 depths × 2 | 24/24 | 24/24 to 64k |
-| Needles at 246-250k prompt tokens (95% of the window) × 3 depths × 2 | 6/6 | not run |
+| Needles, 4k / 16k / 64k / 128k × 3 depths × 2 | 24/24 | 24/24 on a different grid: 4k / 16k / 32k / 64k (its `evidence/fp8-default/`); 128k not run |
+| Needles at 246-250k prompt tokens (94-95% of the window) × 3 depths × 2 | 6/6 | not run |
 
-The 8 tool misses are 4 prompts, each failing the same way streamed and non-streamed. In 2 the model adds an optional argument (`"formal": false`). In 1 it picks the wrong tool, and in 1 it makes a second, unrequested call. The model wrote all of these itself: the raw token ids decode to `<parameter=formal>\nFalse\n</parameter>`, and TensorFold's parser typed that correctly ([`t27-raw-reply.json`](evidence/s8-quality/t27-raw-reply.json), [`t2-tools-failures.jsonl`](evidence/s8-quality/t2-tools-failures.jsonl)). They come from the MLX 4-bit checkpoint, not from the engine. If exact tool arguments matter more than speed, the vLLM NVFP4 recipe scored 60/60.
+The 8 tool misses are 4 prompts, each failing the same way streamed and non-streamed. In 2 the model adds an optional argument (`"formal": false`). In 1 it picks the wrong tool, and in 1 it makes a second, unrequested call. The model emitted these calls: the raw token ids decode to `<parameter=formal>\nFalse\n</parameter>`, and TensorFold's parser typed them faithfully ([`t27-raw-reply.json`](evidence/s8-quality/t27-raw-reply.json), [`t2-tools-failures.jsonl`](evidence/s8-quality/t2-tools-failures.jsonl)). Whether the 4-bit weights or TensorFold's numerics lead the model there was not tested: that needs this checkpoint on another engine, or TensorFold on another checkpoint. If exact tool arguments matter more than speed, the vLLM NVFP4 recipe scored 60/60.
 
 
 ## Concurrency (opt-in)
@@ -85,14 +85,14 @@ TensorFold 0.6.2 serves one request at a time on two ranks. `PROFILE=concurrent 
 
 Every concurrent reply had the same token sha as the same request alone and as a `"draft": false` run, in every cell (0 unequal). A client that leaves mid-stream does not disturb the others. A `response_format` request gets HTTP 400 in this profile: two-rank concurrency serves no grammars, logprobs or images.
 
-The cost is a lone request. On repeated prompts it is 5-8% slower (the table's 1-user row), and 9-16% slower on the frozen ruler's prose and the longer cells. With a different prompt every time it decodes at 52.2 tok/s against 73.9 on the serial default (`tools/bench_distinct.py`). Every two-rank round goes through rank 0's plan, a TCP message to rank 1 and a digest all-gather, which adds about 10 ms to a ~26 ms prose round. Keep the serial default for one user at a time; use the profile when several clients share the pair.
+At 8 users the aggregate is 2.3-4.8x the serial default. The cost is a lone request, 5-29% slower depending on the traffic: 5-8% on repeated prompts (the table's 1-user row), 8-16% on the frozen ruler's prose and the longer cells, and 52.2 against 73.9 tok/s with a different prompt every time (`tools/bench_distinct.py`). The cause is not isolated. Repeated prompts speed up run to run (frozen prose c=1: 42.0, 59.3, 66.0 tok/s), so part of it is per-prompt warm-up in the concurrent decoder. Every two-rank round also adds rank 0's host planning, a TCP message and a digest all-gather, but that cost was not measured on its own. Keep the serial default for one user at a time; use the profile when several clients share the pair.
 
 The profile keeps 15 drafts, where exactness was checked. `MTP_DRAFTS=6` measured 4-10% more aggregate at 8 users (`evidence/s6-pr141/P8-D6-v2/`, throughput only, without the exactness flags).
 
 
 ## Against the vLLM recipe, same day, same harness
 
-The sibling [vLLM recipe](https://github.com/sfxnz/Qwen3.8-Flash-Next-NVFP4-vLLM-2x-DGX-Spark) was restored with its own `run.sh` after these tests (`d66a95e`: v0.30.0 + overlays, `nvidia/Qwen3.8-Flash-Next-NVFP4`, MTP-3, FP8 dense; its container config is identical to the pre-test serve, env and argv diffed). This recipe's tools were then run against it. The weights differ: MLX 4-bit on every linear here, NVFP4 experts with FP8/bf16 elsewhere there. See Quality for what that costs. Receipts: [`evidence/s9-vllm-same-harness/`](evidence/s9-vllm-same-harness/).
+The sibling [vLLM recipe](https://github.com/sfxnz/Qwen3.8-Flash-Next-NVFP4-vLLM-2x-DGX-Spark) was restored with its own `run.sh` after these tests (`d66a95e`: v0.30.0 + overlays, `nvidia/Qwen3.8-Flash-Next-NVFP4`, MTP-3, FP8 dense). Its image, env, argv and mount points match the pre-test serve on both nodes ([`restore-config-diff.txt`](evidence/s9-vllm-same-harness/restore-config-diff.txt)). This recipe's tools were then run against it. The weights differ: MLX 4-bit on every linear here, NVFP4 experts with FP8/bf16 elsewhere there. See Quality for what that costs. Receipts: [`evidence/s9-vllm-same-harness/`](evidence/s9-vllm-same-harness/).
 
 One stream, decode tok/s:
 
@@ -103,37 +103,36 @@ One stream, decode tok/s:
 | code, 512 tokens | 129.8 | 70.0 | 1.85x |
 | prose, 512 tokens | 81.4 | 51.4 | 1.58x |
 | JSON, 768 tokens | 157.1 | 82.5 | 1.90x |
-| German + French, 512 tokens | 68.3 | 47.0 | 1.45x |
+| German + French, 512 tokens (vLLM ended at EOS at 488) | 68.3 | 47.0 | 1.45x |
 | chat, sampled, ~500 tokens | 71.9 | 44.9 | 1.60x |
 | 12 distinct prompts, 256 tokens | 73.9 | 46.5 | 1.59x |
 
 The vLLM recipe's README states prose c=1 56.9 tok/s (its session 8). Today, on a fresh boot of the same config, its frozen ruler measured 40.8 and then 46.5 (prose acceptance 2.69, the same as its README). The ratio above uses 46.5.
 
-Long context (`tools/bench_prefill.py`, depth 15 here, MTP-3 there):
+Long context (`tools/bench_prefill.py`; depth 15 here, MTP-3 there). vLLM's row is the run with the tool's warm-up request and a fresh filler (`--run 101`). Its first run, without the warm-up, measured 1,758 tok/s at 8k (`bench-prefill-nowarmup.out`). TensorFold's rows ran before the warm-up existed; its 8k and 33k cold rates are flat (2,830 / 2,816), which suggests no first-use cost there.
 
-| Prompt tokens | Cold prefill tok/s: TensorFold / vLLM | Identical resend TTFT | New question on the same system prompt, TTFT | Decode tok/s at that context |
+| Prompt tokens (TensorFold / vLLM) | Cold prefill tok/s | Identical resend TTFT | New question on the same system prompt, TTFT | Decode tok/s at that context |
 |---:|---:|---:|---:|---:|
-| 8,224 | 2,830 / 1,758 | 0.08 s / 0.79 s | 0.12 s / 0.72 s | 61.0 / 44.9 |
-| 32,921 | 2,816 / 2,636 | 0.11 s / 1.15 s | 0.15 s / 1.14 s | 66.1 / 48.2 |
-| 131,329 | 2,377 / 2,034 | 0.25 s / 1.43 s | 0.28 s / 1.44 s | 55.5 / 47.6 |
+| 8,224 / 8,193 | 2,830 / 2,977 | 0.08 s / 0.64 s | 0.12 s / 0.66 s | 61.0 / 49.4 |
+| 32,921 / 32,841 | 2,816 / 2,754 | 0.11 s / 1.03 s | 0.15 s / 1.03 s | 66.1 / 45.1 |
+| 131,329 / 131,559 | 2,377 / 2,033 | 0.25 s / 1.58 s | 0.28 s / 1.59 s | 55.5 / 46.2 |
 
-Several users (`tools/vendor/bench_concurrent.py`):
+Several users (`tools/vendor/bench_concurrent.py`). The TensorFold runs used `--alone`, which sends each request alone before its wave, so their prompts were warm. vLLM's ran without it (vLLM returns no token sha to check), so its slowest-first-token column includes cold first reps. Compare aggregates, not first tokens:
 
-| 8 users, 256 tokens | TensorFold serial default | TensorFold `PROFILE=concurrent` | vLLM sibling (`--max-num-seqs 8`) |
+| 8 users, 256 tokens: aggregate tok/s (slowest first token) | TensorFold serial default | TensorFold `PROFILE=concurrent` | vLLM sibling (`--max-num-seqs 8`) |
 |---|---:|---:|---:|
-| code, greedy: aggregate tok/s (slowest TTFT) | 108.5 (16.58 s) | 519.6 (0.16 s) | 295.4 (0.16 s) |
-| chat, greedy: aggregate tok/s (slowest TTFT) | 88.1 (20.49 s) | 424.8 (0.18 s) | 242.1 (0.31 s) |
-| code, T 1.0: aggregate tok/s (slowest TTFT) | 99.9 (18.18 s) | 234.3 (0.2 s) | 247.5 (0.34 s) |
-| chat, T 1.0: aggregate tok/s (slowest TTFT) | 81.7 (22.02 s) | 228.2 (0.18 s) | 206.1 (0.4 s) |
+| code, greedy | 108.5 (16.58 s) | 519.6 (0.16 s) | 295.4 (0.16 s) |
+| chat, greedy | 88.1 (20.49 s) | 424.8 (0.18 s) | 242.1 (0.31 s) |
+| code, T 1.0 | 99.9 (18.18 s) | 234.3 (0.2 s) | 247.5 (0.34 s) |
+| chat, T 1.0 | 81.7 (22.02 s) | 228.2 (0.18 s) | 206.1 (0.4 s) |
 
-For one user at a time, TensorFold's default is 1.45-3.0x vLLM's decode and resumes long prompts 5-10x sooner. With several users, the serial default falls behind vLLM by 2.5-2.7x and queues requests. `PROFILE=concurrent` closes that: 1.76x vLLM greedy and 0.95-1.1x sampled at 8 users, with first tokens at or under vLLM's.
-
+For one user at a time, TensorFold's default decodes 1.45-3.0x vLLM's rate. A resend or new question after a long prompt starts 5-9x sooner. Cold prefill is level with vLLM to 33k tokens (vLLM +5% at 8k, TensorFold +2% at 33k) and 17% faster at 131k. With several users, the serial default falls behind vLLM by 2.5-2.7x and queues requests. `PROFILE=concurrent` closes that: 1.75x vLLM greedy and 0.95-1.1x sampled at 8 users.
 
 ## Requirements
 
 - Two DGX Sparks on the QSFP RoCE link (stock `10.100.8.1` / `10.100.8.2`)
 - Docker + NVIDIA Container Toolkit on both nodes
-- About 115 GB free disk per node for the weights, plus about 25 GB for the image
+- About 115 GB free disk per node for the weights (113.2 GB snapshot), plus 24.5 GB for the image ([`footprint.txt`](evidence/s7-default/footprint.txt))
 - SSH from the head node to the worker (`spark2` in this lab)
 - Exclusive GPUs. Do not start this recipe while another `--gpus all` serve is up; `run.sh` refuses to.
 
@@ -150,7 +149,7 @@ hf auth login
 docker build -t tf-qwen38-flashnext:0.6.2 docker/
 ```
 
-The build clones TensorFold at `TF_SHA`, applies an optional patch from `docker/patches/` (checked against its sha256), and pip-installs it with `xgrammar` 0.2.8. It fails if pip replaces the base image's torch or triton. `xgrammar` is needed on both ranks: rank 1 recompiles every `response_format` grammar, and without `xgrammar` it would exit and leave rank 0 waiting in NCCL. `run.sh` refuses an image whose `tensorfold.sha` / `tensorfold.patch_sha` labels differ from `TF_SHA` / `TF_PATCH`.
+The build clones TensorFold at `TF_SHA`, applies an optional patch from `docker/patches/` (pinned by sha256 in `run.sh` and `recipe.yaml`), and pip-installs it with `xgrammar` 0.2.8 under [`docker/constraints.txt`](docker/constraints.txt). Those are the package versions the measured images resolved ([`pip-freeze-measured.txt`](evidence/s7-default/pip-freeze-measured.txt)). The build fails if pip replaces the base image's torch or triton. `xgrammar` is needed on both ranks: rank 1 recompiles every `response_format` grammar, and without `xgrammar` it would exit and leave rank 0 waiting in NCCL. `run.sh` refuses an image whose `tensorfold.sha` / `tensorfold.patch_sha` labels differ from `TF_SHA` / `TF_PATCH`.
 
 ## Quick start
 
@@ -164,17 +163,19 @@ VALIDATE_ONLY=1 ./run.sh   # checks the defaults, no Docker
 
 The head checks that the weights are complete on its disk: every shard's safetensors header must end at its file size. It builds or copies the image, then starts rank 1 on `spark2`, where `run.sh` makes the same weight check. Then it starts rank 0 and waits for `/health` and `/v1/models`. It checks the worker container every ~10 s while it waits. If SSH to `WORKER_HOST` fails, it exits 1 instead of starting a TP=2 head alone. Every serve setting is forwarded to the worker shell-quoted; both ranks get their engine flags from one function, because TensorFold refuses ranks with different settings.
 
-A first start downloads ~113 GB per node and JIT-compiles the CUDA kernels; later starts take about 1-2 minutes. The containers run with `HF_HUB_OFFLINE=1` and no HF token.
+A first start downloads 113 GB per node and JIT-compiles the CUDA kernels (TensorFold reported loaded in 120-133 s). Later starts load in 32-42 s (the `loaded in` lines in `evidence/*/startup.txt`). The containers run with `HF_HUB_OFFLINE=1` and no HF token.
 
-If SSH is not set up, start the worker yourself, then the head:
+If SSH is not set up, start the worker yourself, then the head without orchestration (the same settings on both):
 
 ```bash
 # spark2
 ROLE=worker ./run.sh
 
 # spark1
-ROLE=head ./run.sh
+ORCHESTRATE=0 ./run.sh
 ```
+
+With `PROFILE=concurrent`, set it on both nodes. The worker then needs `docker/patches/` next to its `run.sh`, as in a full checkout.
 
 Smoke test (thinking is off by default):
 
@@ -205,7 +206,7 @@ Stop both ranks from the head:
 ./stop.sh
 ```
 
-`stop.sh` stops rank 0 first with SIGTERM: it closes the HTTP server and the rendezvous store. Rank 1 then exits by itself, and the script waits for it before stopping and removing its container. Both ranks stop in about 3 s.
+`stop.sh` stops rank 0 first with SIGTERM: it closes the HTTP server and the rendezvous store. Rank 1 then exits by itself, and the script waits for it (up to `STOP_TIMEOUT`, 30 s) before stopping and removing its container.
 
 ## Defaults
 
@@ -257,7 +258,7 @@ export PORT=8000
 export CONTEXT=262144
 ```
 
-Pin `NCCL_IB_HCA`. GB10 exposes four HCAs and two of them are DOWN; unpinned NCCL can pick a dead one. Both live HCAs (`rocep1s0f1,roceP2p1s0f1`) are TensorFold's recommendation; one HCA decoded within noise here ([`evidence/s3-levers/H1`](evidence/s3-levers/H1/)). `NCCL_PROTO=LL` / `LL128` did not help decode (0 to −3.6%, [`evidence/s3-levers/`](evidence/s3-levers/)). `TF_CACHE` holds the kernel builds (default `~/.cache/tensorfold-qwen38`). `MEMORY_RESERVE_GIB` sets TensorFold's startup reserve (default max(4 GiB, 10% of RAM)).
+Pin `NCCL_IB_HCA`. GB10 exposes four HCAs and two of them are DOWN; unpinned NCCL can pick a dead one. Both live HCAs (`rocep1s0f1,roceP2p1s0f1`) are TensorFold's recommendation; one HCA decoded within noise here ([`evidence/s3-levers/H1`](evidence/s3-levers/H1/)). `NCCL_PROTO=LL` / `LL128` did not help decode (−3.6% to +1.0% per cell, [`evidence/s3-levers/`](evidence/s3-levers/)). `TF_CACHE` holds the kernel builds (default `~/.cache/tensorfold-qwen38`). `MEMORY_RESERVE_GIB` sets TensorFold's startup reserve (default max(4 GiB, 10% of RAM)).
 
 Memory per rank at the full window: TensorFold's startup estimate is 48.9 GiB, plus the 29.8 GiB n-gram tables, which it mlocks in host memory (`--ulimit memlock` and `IPC_LOCK` are passed for that). About 58-61 GiB stays available per node after load and benches ([`evidence/s7-default/`](evidence/s7-default/)).
 
@@ -289,17 +290,17 @@ Every number above has a file under [`evidence/`](evidence/). `recipe.yaml` name
 ## Gotchas
 
 - TensorFold opens HTTP only after the model is loaded, so "connection refused" means still loading.
-- The first gate after a boot runs up to 5% slower than a repeat: decode graphs for larger context buckets are captured lazily on first use.
+- One first-after-boot gate (s7) measured up to 5.6% lower than a repeat on the same boot; another (s4 D15) did not. The published table is the repeat.
 - `docker stop` on a rank without `--init` would wait out its timeout: TensorFold's rank 1 installs no SIGTERM handler. `run.sh` passes `--init`.
 - The `TensorFold/` repo id prints a cosmetic "untested" note at start (TensorFold lists the checkpoint under its old `Vontra/` name).
 
 ## Credits
 
-- Engine: [TensorFold](https://github.com/ashhart/TensorFold) (Apache-2.0), tag v0.6.2. `tools/vendor/bench_concurrent.py` is TensorFold's, unmodified (Apache-2.0).
+- Engine: [TensorFold](https://github.com/ashhart/TensorFold) (Apache-2.0 from 0.6.0; earlier code MIT), tag v0.6.2. `tools/vendor/bench_concurrent.py` is TensorFold's, unmodified.
 - Concurrency patch: upstream PR #141 by Bill H. (BHCC2025) and ashhart, ported onto 0.6.2 here with review fixes ([`docker/patches/`](docker/patches/)).
 - Checkpoint: [TensorFold/Qwen3.8-Flash-Next-MLX-4bit-MTP](https://huggingface.co/TensorFold/Qwen3.8-Flash-Next-MLX-4bit-MTP); base model Qwen3.8-Flash-Next.
 - Harness: `bench_decode.py`, the smokes and `quality/` come from the vLLM sibling recipe.
 
 ## License
 
-Recipe scripts are MIT. `docker/patches/` and `tools/vendor/` are Apache-2.0 TensorFold source with changes noted in their headers and commit messages. Model weights follow the source model license on Hugging Face.
+The recipe's own files are MIT ([`LICENSE`](LICENSE)). `docker/patches/pr141-on-0.6.2.patch` changes TensorFold source: Apache-2.0, provenance and changes in [`docker/patches/README.md`](docker/patches/README.md). `tools/vendor/bench_concurrent.py` is TensorFold's, unmodified: MIT and Apache-2.0, per its header. Upstream's notice is in [`NOTICE`](NOTICE) and the license texts are in [`LICENSES/`](LICENSES/). Model weights follow the source model license on Hugging Face.
