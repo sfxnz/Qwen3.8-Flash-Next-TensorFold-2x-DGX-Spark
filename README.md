@@ -26,7 +26,7 @@ Conditions: streamed greedy, thinking off, max_tokens 200 (prose ends at EOS nea
 2. Same as note 1.
 <!-- END generated measured -->
 
-The default MTP draft cap is 15 (TensorFold's own default is 6). Each verify round now emits 4.33 tokens on the frozen ruler instead of 3.56. Structured output got +36-46%, JSON +10-12% and code +3-6%. Prose, long prose, multilingual text and sampled chat moved within ±1.3%, because the 70% confidence rule still stops a chain early on uncertain text. Greedy replies were byte-identical at every depth: drafting does not change the tokens ([`evidence/s4-depth/`](evidence/s4-depth/), ABAB against a fresh baseline). At 8k-131k context, depth 15 and depth 6 decode at the same speed ([`evidence/s5-longctx/`](evidence/s5-longctx/)).
+The default MTP draft cap is 15 (TensorFold's own default is 6). Each verify round now emits 4.33 tokens on the frozen ruler instead of 3.56. Against depth 6 on the same day: structured +42-46%, JSON +10% and code +4%. Prose, long prose, multilingual text and sampled chat moved within ±1%, because the 70% confidence rule still stops a chain early on uncertain text. Greedy replies were byte-identical at every depth: drafting does not change the tokens ([`evidence/s4-depth/`](evidence/s4-depth/), ABAB against a fresh baseline). At 8k-131k context, depth 15 and depth 6 decode at the same speed ([`evidence/s5-longctx/`](evidence/s5-longctx/)).
 
 ### Longer cells (c=1)
 
@@ -90,7 +90,44 @@ The cost is a lone request. On repeated prompts it is 5-8% slower (the table's 1
 The profile keeps 15 drafts, where exactness was checked. `MTP_DRAFTS=6` measured 4-10% more aggregate at 8 users (`evidence/s6-pr141/P8-D6-v2/`, throughput only, without the exactness flags).
 
 
-VLLM_SECTION
+## Against the vLLM recipe, same day, same harness
+
+The sibling [vLLM recipe](https://github.com/sfxnz/Qwen3.8-Flash-Next-NVFP4-vLLM-2x-DGX-Spark) was restored with its own `run.sh` after these tests (`d66a95e`: v0.30.0 + overlays, `nvidia/Qwen3.8-Flash-Next-NVFP4`, MTP-3, FP8 dense; its container config is identical to the pre-test serve, env and argv diffed). This recipe's tools were then run against it. The weights differ: MLX 4-bit on every linear here, NVFP4 experts with FP8/bf16 elsewhere there. See Quality for what that costs. Receipts: [`evidence/s9-vllm-same-harness/`](evidence/s9-vllm-same-harness/).
+
+One stream, decode tok/s:
+
+| Cell | TensorFold (this recipe) | vLLM sibling, same day | Ratio |
+|---|---:|---:|---:|
+| frozen `bench_decode.py` prose c=1 | 69.6 | 46.5 | 1.50x |
+| frozen `bench_decode.py` structured c=1 | 249.5 | 82.4 | 3.03x |
+| code, 512 tokens | 129.8 | 70.0 | 1.85x |
+| prose, 512 tokens | 81.4 | 51.4 | 1.58x |
+| JSON, 768 tokens | 157.1 | 82.5 | 1.90x |
+| German + French, 512 tokens | 68.3 | 47.0 | 1.45x |
+| chat, sampled, ~500 tokens | 71.9 | 44.9 | 1.60x |
+| 12 distinct prompts, 256 tokens | 73.9 | 46.5 | 1.59x |
+
+The vLLM recipe's README states prose c=1 56.9 tok/s (its session 8). Today, on a fresh boot of the same config, its frozen ruler measured 40.8 and then 46.5 (prose acceptance 2.69, the same as its README). The ratio above uses 46.5.
+
+Long context (`tools/bench_prefill.py`, depth 15 here, MTP-3 there):
+
+| Prompt tokens | Cold prefill tok/s: TensorFold / vLLM | Identical resend TTFT | New question on the same system prompt, TTFT | Decode tok/s at that context |
+|---:|---:|---:|---:|---:|
+| 8,224 | 2,830 / 1,758 | 0.08 s / 0.79 s | 0.12 s / 0.72 s | 61.0 / 44.9 |
+| 32,921 | 2,816 / 2,636 | 0.11 s / 1.15 s | 0.15 s / 1.14 s | 66.1 / 48.2 |
+| 131,329 | 2,377 / 2,034 | 0.25 s / 1.43 s | 0.28 s / 1.44 s | 55.5 / 47.6 |
+
+Several users (`tools/vendor/bench_concurrent.py`):
+
+| 8 users, 256 tokens | TensorFold serial default | TensorFold `PROFILE=concurrent` | vLLM sibling (`--max-num-seqs 8`) |
+|---|---:|---:|---:|
+| code, greedy: aggregate tok/s (slowest TTFT) | 108.5 (16.58 s) | 519.6 (0.16 s) | 295.4 (0.16 s) |
+| chat, greedy: aggregate tok/s (slowest TTFT) | 88.1 (20.49 s) | 424.8 (0.18 s) | 242.1 (0.31 s) |
+| code, T 1.0: aggregate tok/s (slowest TTFT) | 99.9 (18.18 s) | 234.3 (0.2 s) | 247.5 (0.34 s) |
+| chat, T 1.0: aggregate tok/s (slowest TTFT) | 81.7 (22.02 s) | 228.2 (0.18 s) | 206.1 (0.4 s) |
+
+For one user at a time, TensorFold's default is 1.45-3.0x vLLM's decode and resumes long prompts 5-10x sooner. With several users, the serial default falls behind vLLM by 2.5-2.7x and queues requests. `PROFILE=concurrent` closes that: 1.76x vLLM greedy and 0.95-1.1x sampled at 8 users, with first tokens at or under vLLM's.
+
 
 ## Requirements
 
@@ -247,6 +284,7 @@ Every number above has a file under [`evidence/`](evidence/). `recipe.yaml` name
 | [`s6-pr141`](evidence/s6-pr141/) | `--parallel` on two ranks: TensorFold's CUDA suites, gate, 1-8 users, failure probes | see Concurrency |
 | [`s7-default`](evidence/s7-default/) | Final default image and settings; serial 1-8 user baseline | published numbers |
 | [`s8-quality`](evidence/s8-quality/) | T2 (GSM8K, IFEval, tools, JSON, repetition, effort) and T3 needles to 250k | see Quality |
+| [`s9-vllm-same-harness`](evidence/s9-vllm-same-harness/) | vLLM sibling restored and checked, then measured with this recipe's tools | see "Against the vLLM recipe" |
 
 ## Gotchas
 

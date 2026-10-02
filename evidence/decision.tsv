@@ -5,5 +5,6 @@ P-LL128	NCCL LL128 lowers latency	EXTRA_ENV=NCCL_PROTO=LL128	revert (worse)	evid
 D4	shorter chains waste fewer drafts	MTP_DRAFTS=4	revert (worse)	evidence/s3-levers/D4	-19% structured
 C50	lower confidence lengthens useful chains	MTP_CONFIDENCE=0.50	revert (noise/worse)	evidence/s3-levers/C50	prose_long -3.6%
 C85	higher confidence cuts wasted drafts	MTP_CONFIDENCE=0.85	revert (noise)	evidence/s3-levers/C85	code -5.2%
-D15	longer chains help predictable text	MTP_DRAFTS=15	keep (default)	evidence/s4-depth	structured +46%, JSON +10%, code +4%, rest within noise; neutral at 8k-131k (s5)
-PR141	two-rank --parallel serves several users at once	TF_PATCH=patches/pr141-on-0.6.2.patch PARALLEL=8	opt-in profile	evidence/s6-pr141	see SUMMARY
+D15	longer chains help predictable text	MTP_DRAFTS=15	keep (default)	evidence/s4-depth	structured +42-46%, JSON +10%, code +4%, rest within ±1%; neutral at 8k-131k (s5)
+PR141	two-rank --parallel serves several users at once	PROFILE=concurrent (TF_PATCH=patches/pr141-on-0.6.2.patch PARALLEL=8)	opt-in profile	evidence/s6-pr141	8 users 2.3-4.8x aggregate, exact; lone requests 5-29% slower
+P8-D6	fewer drafts suit 8 shared streams	PROFILE=concurrent MTP_DRAFTS=6	documented option, not default	evidence/s6-pr141/P8-D6-v2	+4-10% aggregate at 8 users; exactness not re-checked at depth 6
