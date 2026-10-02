@@ -22,3 +22,5 @@ Rows below are generated from each config's `bench-prefill.out`:
 | D15b | 8224 | 2811 | 2.93 | 0.07 | 0.12 | 60.4 |
 | D15b | 32921 | 2817 | 11.69 | 0.11 | 0.15 | 65.6 |
 | D15b | 131329 | 2378 | 55.23 | 0.24 | 0.28 | 55.0 |
+
+These runs predate `tools/bench_prefill.py`'s warm-up request (added after the pre-PR review). The 8k and 33k cold rates are flat in every config (2,811-2,830 vs 2,814-2,818 tok/s), so no first-use cost shows in the first row.
