@@ -1,0 +1,94 @@
+# Source of truth for the values that repeat across run.sh, README.md and CI.
+# Edit here, then `python3 kit/render.py`. CI runs `python3 kit/render.py --check`.
+# Every scalar is used as the string you typed (0.80 stays 0.80). `null` means none.
+# `&name` anchors a value; `*name` reuses it, so a pinned value is written once.
+# Replace every TODO. Keep the section order; render.py reads serve.env, readme.defaults, measured.decode.
+
+model:
+  id: &model TODO-org/TODO-model                 # Hugging Face repo id
+  revision: &revision TODO-40-hex-snapshot-sha   # the snapshot run.sh pins and downloads
+  served_name: &served_name TODO-org/TODO-model  # what /v1/models reports
+  family: TODO                                   # e.g. GLM-5.3-Flash
+  params: TODO total / TODO active               # e.g. 320B total / 18B active
+  quant: TODO                                    # e.g. NVFP4 (weight-only, routed experts)
+
+image:
+  base: TODO-registry/TODO-image:TODO-tag        # the FROM line of docker/Dockerfile.*
+  digest: null                                   # sha256:... when the base is digest-pinned
+  local_tag: &image TODO-local-image-tag         # what `docker build -t` produces on both nodes
+  build: docker/Dockerfile.TODO                  # the Dockerfile chain, in order
+
+engine:
+  name: vllm
+  version: null                                  # the vLLM release inside the image, if the tag pins one
+
+hardware:
+  shape: 2x DGX Spark (GB10)
+  nnodes: &nnodes 2
+  tp: &tp 2
+
+serve:
+  # The `# BEGIN generated` block of run.sh, in run.sh order. Each key renders as NAME="${NAME:-value}".
+  # Empty string means "not set; vLLM decides". Add a key here and its line in run.sh together.
+  env:
+    MODEL: *model
+    SERVED_NAME: *served_name
+    IMAGE: *image
+    CONTAINER_NAME: TODO-container-name
+    PORT: 8000
+    MASTER_PORT: 29500
+    HEAD_IP: 10.100.8.1
+    WORKER_HOST: spark2
+    IFACE: enp1s0f1np1
+    HCA: rocep1s0f1
+    TP: *tp
+    NNODES: *nnodes
+    MAX_MODEL_LEN: 32768
+    MAX_NUM_SEQS: 2
+    UTIL: 0.80
+    KV_CACHE_DTYPE: auto
+    KV_CACHE_MEMORY: ""
+    BLOCK_SIZE: ""
+    MAX_NUM_BATCHED_TOKENS: ""
+    SPEC_CONFIG: ""
+    COMPILATION_CONFIG: ""
+    ENFORCE_EAGER: 0
+    HF_CACHE: $HOME/.cache/huggingface
+    SNAPSHOT_SHA: *revision
+    SKIP_DOWNLOAD: 0
+    ORCHESTRATE: auto
+    EXTRA_ARGS: ""
+
+readme:
+  # Rows of the README "Defaults" table. {NAME} is replaced by serve.env.NAME.
+  defaults:
+    - Image: "`{IMAGE}` (local, built from `docker/`)"
+    - Model: "`{MODEL}`"
+    - Checkpoint: "`{SNAPSHOT_SHA}`"
+    - "`--tensor-parallel-size` / `--nnodes`": "{TP} / {NNODES}"
+    - "`--max-model-len`": "{MAX_MODEL_LEN}"
+    - "`--max-num-seqs`": "{MAX_NUM_SEQS}"
+    - "`--kv-cache-dtype`": "`{KV_CACHE_DTYPE}`"
+    - "`--kv-cache-memory`": "not pinned yet (`KV_CACHE_MEMORY` is empty; vLLM decides)"
+    - "`--block-size`": "vLLM default (`BLOCK_SIZE` is empty)"
+    - CUDA graphs: "on (`ENFORCE_EAGER=1` reverts to `--enforce-eager`)"
+    - Speculative: "none (`SPEC_CONFIG` is empty)"
+    - API: "`http://<head>:{PORT}/v1`"
+    - Container: "`{CONTAINER_NAME}`"
+    - Master port: "{MASTER_PORT}"
+
+measured:
+  # The README decode table. One row per (phase, concurrency); a row's three numbers come from one
+  # bench_decode.py run. evidence: the file under evidence/ that contains them, or null while there is none.
+  decode:
+    conditions: streamed greedy, thinking off, 200 completion tokens, 3-run median; TODO pin, context, drafter, graphs
+    units: {decode: tok/s per stream (median), aggregate: tok/s, ttft_p50: s}
+    rows:
+      - {phase: prose, concurrency: 1, decode: TODO, aggregate: TODO, ttft_p50: TODO, evidence: null}
+      - {phase: prose, concurrency: 2, decode: TODO, aggregate: TODO, ttft_p50: TODO, evidence: null}
+      - {phase: structured, concurrency: 1, decode: TODO, aggregate: TODO, ttft_p50: TODO, evidence: null}
+      - {phase: structured, concurrency: 2, decode: TODO, aggregate: TODO, ttft_p50: TODO, evidence: null}
+
+links:
+  model: https://huggingface.co/TODO-org/TODO-model
+  repo: https://github.com/TODO-user/TODO-repo

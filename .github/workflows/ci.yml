@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: run.sh dry-run with the shipped defaults
+        run: VALIDATE_ONLY=1 ./run.sh
+      # One step per refusal in run.sh, for example:
+      # - name: run.sh refuses a window the KV pin cannot hold
+      #   run: |
+      #     if VALIDATE_ONLY=1 MAX_MODEL_LEN=2097152 ./run.sh; then
+      #       echo "run.sh accepted MAX_MODEL_LEN=2097152 without FORCE_UNSAFE_CTX" >&2
+      #       exit 1
+      #     fi
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - run: shellcheck -S warning run.sh stop.sh
