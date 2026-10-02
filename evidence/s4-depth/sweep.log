@@ -1,0 +1,12 @@
+2026-10-02T14:55:32Z sweep: D12 TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=12
+2026-10-02T14:58:33Z sweep: D12 GATE=PASS
+2026-10-02T14:58:33Z sweep: D15 TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=15
+2026-10-02T15:01:38Z sweep: D15 GATE=PASS
+2026-10-02T15:01:38Z sweep: D10r TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=10
+2026-10-02T15:04:40Z sweep: D10r GATE=PASS
+2026-10-02T15:04:40Z sweep: B0c TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache
+2026-10-02T15:07:41Z sweep: B0c GATE=PASS
+2026-10-02T15:07:41Z sweep: D8r TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=8
+2026-10-02T15:10:39Z sweep: D8r GATE=PASS
+2026-10-02T15:10:39Z sweep: D12r TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=12
+2026-10-02T15:13:34Z sweep: D12r GATE=PASS

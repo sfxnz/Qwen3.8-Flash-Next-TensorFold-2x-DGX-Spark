@@ -1,0 +1,18 @@
+2026-10-02T14:41:26.632Z session_gate: evidence dir /home/sfxnz/projects/ai-lab/recipes/Qwen3.8-Flash-Next-2x-DGX-Spark-TensorFold/evidence/s3-levers/D8
+2026-10-02T14:41:27.175Z session_gate: start smoke-thinking
+2026-10-02T14:41:27.375Z session_gate: end smoke-thinking rc=0
+2026-10-02T14:41:27.377Z session_gate: start smoke-tools
+2026-10-02T14:41:27.974Z session_gate: end smoke-tools rc=0
+2026-10-02T14:41:27.976Z session_gate: start smoke-count
+2026-10-02T14:41:32.754Z session_gate: end smoke-count rc=0
+2026-10-02T14:41:32.762Z session_gate: start bench-frozen
+2026-10-02T14:41:55.550Z session_gate: end bench-frozen rc=0
+2026-10-02T14:41:55.569Z session_gate: start bench-cells
+2026-10-02T14:43:25.758Z session_gate: end bench-cells rc=0
+finished_at=2026-10-02T14:43:26.630Z
+smoke-thinking=0
+smoke-tools=0
+smoke-count=0
+bench-frozen=0
+bench-cells=0
+GATE=PASS

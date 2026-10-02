@@ -1,0 +1,7 @@
+# Draft-depth follow-up: extend above 10 and repeat 8/10 against a fresh baseline (ABAB-style).
+D12   TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=12
+D15   TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=15
+D10r  TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=10
+B0c   TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache
+D8r   TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=8
+D12r  TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=12

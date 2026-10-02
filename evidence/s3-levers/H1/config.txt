@@ -1,0 +1,1 @@
+TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache HCA=rocep1s0f1

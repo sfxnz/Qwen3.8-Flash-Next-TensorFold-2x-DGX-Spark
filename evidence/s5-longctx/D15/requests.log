@@ -1,0 +1,11 @@
+[tensorfold] CUDA rank 0 startup estimate 48.86 GiB within 100.21 GiB; native 262144, allocated prompt/reply window 262144, cache slots 262160
+[tensorfold] Flash Next on CUDA: 1 to 15 MTP drafts a round, a chain stops before a later draft under 70%; 262144-token prompt/reply window; 262160-token cache; n-gram tables read alongside the weights (0.0s after them), locked in memory in 9.3s; 48 decode graphs captured; idle prompt pieces 2048 rows; prompt kernels warmed in 0.8s
+[tensorfold] done req-f9fe64cf5621 prompt=8224 cached=0 thinking=False tokens=16 sha=9c564089f250 finish=length tok/s=23.4 ttft=2.88s prefill=2.88s rounds=8 accepted=8/11
+[tensorfold] done req-7fb3503ae8bb prompt=8224 cached=8223 thinking=False tokens=16 sha=9c564089f250 finish=length tok/s=70.0 ttft=0.06s prefill=0.06s rounds=8 accepted=8/11
+[tensorfold] done req-93407f15d6b7 prompt=8240 cached=8201 thinking=False tokens=256 sha=0fda7cc4a5bf finish=length tok/s=61.0 ttft=0.11s prefill=0.11s rounds=137 accepted=119/213
+[tensorfold] done req-6e0877a3b273 prompt=32921 cached=0 thinking=False tokens=16 sha=fcc82f535dca finish=length tok/s=21.4 ttft=11.65s prefill=11.64s rounds=7 accepted=9/11
+[tensorfold] done req-7472f1606bb1 prompt=32921 cached=32920 thinking=False tokens=16 sha=fcc82f535dca finish=length tok/s=77.4 ttft=0.06s prefill=0.06s rounds=7 accepted=9/11
+[tensorfold] done req-b5a3355e492a prompt=32937 cached=32898 thinking=False tokens=256 sha=39655e83e16e finish=length tok/s=66.1 ttft=0.11s prefill=0.11s rounds=125 accepted=130/203
+[tensorfold] done req-e1edc0a5b704 prompt=131329 cached=0 thinking=False tokens=16 sha=213419fb129e finish=length tok/s=20.1 ttft=55.08s prefill=55.07s rounds=8 accepted=8/12
+[tensorfold] done req-340f5b2a0156 prompt=131329 cached=131328 thinking=False tokens=16 sha=213419fb129e finish=length tok/s=60.6 ttft=0.08s prefill=0.06s rounds=8 accepted=8/12
+[tensorfold] done req-bec877b6bfba prompt=131345 cached=131306 thinking=False tokens=256 sha=a4c3cbde69f4 finish=length tok/s=55.5 ttft=0.13s prefill=0.12s rounds=141 accepted=114/212

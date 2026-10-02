@@ -1,0 +1,18 @@
+==> role=head host=spark1
+==> Starting rank 1 on spark2 first
+==> role=worker host=spark2
+==> drop_caches: skipped (no passwordless sudo)
+==> Image tf-qwen38-flashnext:0.6.2 (TensorFold 56e2e3ec55bc0ae1d7d5158c4fa2c79a3567ab21)
+==> Using pinned snapshot /home/sfxnz/.cache/huggingface/hub/models--TensorFold--Qwen3.8-Flash-Next-MLX-4bit-MTP/snapshots/2b170fa6309d5d1ee380b35636075fac7945f286 (index shards, headers and tokenizer checked)
+==> Starting tf-qwen38-flashnext rank=1 tp=2 ctx=262144 kv=bf16 mtp=6@0.85 parallel=1 hca=rocep1s0f1,roceP2p1s0f1
+==> memguard pid=2319490 min_avail=3072MB min_swap_free=2048MB log=/tmp/.run-state/memguard.log
+==> Rank 1 is up and waits for rank 0 at 10.100.8.1:29551.
+==> drop_caches: skipped (no passwordless sudo)
+==> Image tf-qwen38-flashnext:0.6.2 (TensorFold 56e2e3ec55bc0ae1d7d5158c4fa2c79a3567ab21)
+==> Using pinned snapshot /home/sfxnz/.cache/huggingface/hub/models--TensorFold--Qwen3.8-Flash-Next-MLX-4bit-MTP/snapshots/2b170fa6309d5d1ee380b35636075fac7945f286 (index shards, headers and tokenizer checked)
+==> Starting tf-qwen38-flashnext rank=0 tp=2 ctx=262144 kv=bf16 mtp=6@0.85 parallel=1 hca=rocep1s0f1,roceP2p1s0f1
+==> memguard pid=265364 min_avail=3072MB min_swap_free=2048MB log=/home/sfxnz/projects/ai-lab/recipes/Qwen3.8-Flash-Next-2x-DGX-Spark-TensorFold/.run-state/memguard.log
+==> Waiting for http://127.0.0.1:8000/health and /v1/models
+==> Ready → http://0.0.0.0:8000/v1  (context=262144)
+{"object": "list", "data": [{"id": "TensorFold/Qwen3.8-Flash-Next-MLX-4bit-MTP", "object": "model", "owned_by": "tensorfold"}]}
+==> Stop with: ./stop.sh

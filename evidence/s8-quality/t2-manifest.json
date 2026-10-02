@@ -1,0 +1,43 @@
+{
+ "tool": "t2",
+ "utc": "20261002T161354Z",
+ "argv": [
+  "quality/t2.py",
+  "--out",
+  "/home/sfxnz/projects/data/qwen38-evals/runs/tensorfold-s8/t2"
+ ],
+ "args": {
+  "url": "http://127.0.0.1:8000",
+  "model": null,
+  "out": "/home/sfxnz/projects/data/qwen38-evals/runs/tensorfold-s8/t2",
+  "tasks": "gsm8k,ifeval,tools,json,rep4,effort",
+  "limit": 0,
+  "workers": 1
+ },
+ "git": {
+  "rev": "b127062c726c4ad45efa507a14f87c4b1d685006",
+  "branch": "agent/tensorfold-tp2-recipe",
+  "dirty": true
+ },
+ "host": "spark1",
+ "server": "http://127.0.0.1:8000",
+ "models": {
+  "object": "list",
+  "data": [
+   {
+    "id": "TensorFold/Qwen3.8-Flash-Next-MLX-4bit-MTP",
+    "object": "model",
+    "owned_by": "tensorfold"
+   }
+  ]
+ },
+ "sha256": {
+  "quality/data/t2_ids.json": "4579ad861db7df3fb3c5357bd4f194c79b29bfd2d6fc45ca14036ae958dc7853",
+  "quality/data/tools.json": "04b69f8c6a39ce100fab19842d71343f20dc84785db2fcde4dbb3d62a5b0c198",
+  "quality/ifeval.py": "b68f7bb53858c2bebcc0738e01b3213f675ea96f9b82dd0773f544e8cb8b9afb",
+  "quality/qlib.py": "6d646abffbe2beaa384006e842452e7302eef614d218c1d7b22cf545cc5f49fe",
+  "quality/score.py": "809a7a60d9dc8fcd5e062c074c93b775d0da7ccace42e245f9396420c1e90bac",
+  "quality/t2.py": "2d95d9f87118bcbf16726db365bfa97ca8b0860c814d4f0fd2dd26f6d6f397dd",
+  "quality/t3_needles.py": "5a9eb792276f24fba5b2fc12f51449e31d88afc91b48d55bf749322a153436d3"
+ }
+}

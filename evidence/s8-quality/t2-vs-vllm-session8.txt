@@ -1,0 +1,74 @@
+{
+ "ref": "/home/sfxnz/projects/data/qwen38-evals/runs/session8/fp8/t2",
+ "cand": "/home/sfxnz/projects/data/qwen38-evals/runs/tensorfold-s8/t2",
+ "gate": "T2",
+ "verdict": "FAIL",
+ "pass": false,
+ "checks": {
+  "effort": true,
+  "gsm8k": true,
+  "ifeval": true,
+  "json": true,
+  "rep4": true,
+  "tools": false
+ },
+ "tasks": {
+  "effort": {
+   "n": 5,
+   "ref_acc": 1.0,
+   "cand_acc": 1.0,
+   "drop_pp": 0.0,
+   "lost": 0,
+   "gained": 0,
+   "p": 1.0,
+   "rule": "5/5 must be all correct"
+  },
+  "gsm8k": {
+   "n": 250,
+   "ref_acc": 0.952,
+   "cand_acc": 0.952,
+   "drop_pp": 0.0,
+   "lost": 2,
+   "gained": 2,
+   "p": 1.0,
+   "rule": "McNemar p >= 0.05 and drop <= 2.0 pp"
+  },
+  "ifeval": {
+   "n": 120,
+   "ref_acc": 0.883333,
+   "cand_acc": 0.866667,
+   "drop_pp": 1.667,
+   "lost": 5,
+   "gained": 3,
+   "p": 0.726562,
+   "rule": "McNemar p >= 0.05 and drop <= 2.0 pp"
+  },
+  "json": {
+   "n": 30,
+   "ref_acc": 1.0,
+   "cand_acc": 1.0,
+   "drop_pp": 0.0,
+   "lost": 0,
+   "gained": 0,
+   "p": 1.0,
+   "rule": "30/30 must be all correct"
+  },
+  "rep4": {
+   "n": 64,
+   "ref": 0.000522,
+   "cand": 0.000302,
+   "abs_diff": 0.00022,
+   "tolerance": 0.005
+  },
+  "tools": {
+   "n": 60,
+   "ref_acc": 1.0,
+   "cand_acc": 0.866667,
+   "drop_pp": 13.333,
+   "lost": 8,
+   "gained": 0,
+   "p": 0.007812,
+   "rule": "52/60 must be all correct"
+  }
+ }
+}

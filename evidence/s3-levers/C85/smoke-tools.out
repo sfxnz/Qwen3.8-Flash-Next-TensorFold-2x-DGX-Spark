@@ -1,0 +1,14 @@
+{
+  "tool_calls": [
+    {
+      "id": "call_89996ad5014443a39697a1d3",
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "arguments": "{\"city\":\"Wellington\"}"
+      }
+    }
+  ],
+  "finish_reason": "tool_calls",
+  "content": null
+}

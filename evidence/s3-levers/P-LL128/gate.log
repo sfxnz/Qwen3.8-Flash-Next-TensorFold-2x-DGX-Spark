@@ -1,0 +1,18 @@
+2026-10-02T14:35:10.404Z session_gate: evidence dir /home/sfxnz/projects/ai-lab/recipes/Qwen3.8-Flash-Next-2x-DGX-Spark-TensorFold/evidence/s3-levers/P-LL128
+2026-10-02T14:35:10.789Z session_gate: start smoke-thinking
+2026-10-02T14:35:11.005Z session_gate: end smoke-thinking rc=0
+2026-10-02T14:35:11.007Z session_gate: start smoke-tools
+2026-10-02T14:35:11.589Z session_gate: end smoke-tools rc=0
+2026-10-02T14:35:11.591Z session_gate: start smoke-count
+2026-10-02T14:35:16.949Z session_gate: end smoke-count rc=0
+2026-10-02T14:35:16.957Z session_gate: start bench-frozen
+2026-10-02T14:35:41.794Z session_gate: end bench-frozen rc=0
+2026-10-02T14:35:41.822Z session_gate: start bench-cells
+2026-10-02T14:37:16.286Z session_gate: end bench-cells rc=0
+finished_at=2026-10-02T14:37:17.185Z
+smoke-thinking=0
+smoke-tools=0
+smoke-count=0
+bench-frozen=0
+bench-cells=0
+GATE=PASS

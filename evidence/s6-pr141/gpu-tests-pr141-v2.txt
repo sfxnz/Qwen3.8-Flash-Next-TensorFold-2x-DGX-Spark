@@ -1,0 +1,21 @@
+=== tests/cuda/test_flashnext_tp.py
+......................                                                   [100%]
+22 passed in 121.72s (0:02:01)
+=== tests/cuda/test_flashnext_tp_multi.py
+....................................                                     [100%]
+36 passed in 26.57s
+=== tests/cuda/test_flashnext_multi.py
+...........................                                              [100%]
+27 passed in 6.32s
+=== tests/cuda/test_flashnext_prompt_cache.py
+.....................................................                    [100%]
+53 passed in 5.25s
+=== tests/cuda/test_flashnext_fork_lanes.py
+............                                                             [100%]
+12 passed in 5.10s
+=== tests/cuda/test_flashnext_fill_arrivals.py
+......                                                                   [100%]
+6 passed in 2.32s
+=== tests/cuda/test_flashnext_large_pieces.py
+....                                                                     [100%]
+4 passed in 2.23s

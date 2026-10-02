@@ -1,0 +1,72 @@
+CELL {"cell": "code", "n": 3, "median_decode_tok_s": 111.57931772314384, "median_ttft_s": 0.0644037218298763, "median_completion_tokens": 512, "shas": ["7730f9bae00a", "7730f9bae00a", "7730f9bae00a"], "runs": [{"ttft_s": 0.14750201487913728, "decode_tok_s": 58.829383270385826, "completion_tokens": 512, "sha": "7730f9bae00a"}, {"ttft_s": 0.061807824997231364, "decode_tok_s": 111.57931772314384, "completion_tokens": 512, "sha": "7730f9bae00a"}, {"ttft_s": 0.0644037218298763, "decode_tok_s": 125.44615674264936, "completion_tokens": 512, "sha": "7730f9bae00a"}], "tokens_per_round": 5.059}
+CELL {"cell": "prose_long", "n": 3, "median_decode_tok_s": 68.29488534991684, "median_ttft_s": 0.06306843808852136, "median_completion_tokens": 512, "shas": ["2ddcf28aa232", "2ddcf28aa232", "2ddcf28aa232"], "runs": [{"ttft_s": 0.1425082830246538, "decode_tok_s": 53.3831317702673, "completion_tokens": 512, "sha": "2ddcf28aa232"}, {"ttft_s": 0.061774064088240266, "decode_tok_s": 68.29488534991684, "completion_tokens": 512, "sha": "2ddcf28aa232"}, {"ttft_s": 0.06306843808852136, "decode_tok_s": 75.22302845043892, "completion_tokens": 512, "sha": "2ddcf28aa232"}], "tokens_per_round": 2.302}
+CELL {"cell": "json", "n": 3, "median_decode_tok_s": 137.11409745794657, "median_ttft_s": 0.07821070402860641, "median_completion_tokens": 768, "shas": ["c75bf29af5c0", "c75bf29af5c0", "c75bf29af5c0"], "runs": [{"ttft_s": 0.15738962008617818, "decode_tok_s": 77.24244351158146, "completion_tokens": 768, "sha": "c75bf29af5c0"}, {"ttft_s": 0.07821070402860641, "decode_tok_s": 137.11409745794657, "completion_tokens": 768, "sha": "c75bf29af5c0"}, {"ttft_s": 0.07434348901733756, "decode_tok_s": 152.8640739372532, "completion_tokens": 768, "sha": "c75bf29af5c0"}], "tokens_per_round": 7.102}
+CELL {"cell": "multilingual", "n": 3, "median_decode_tok_s": 62.88211715965607, "median_ttft_s": 0.05934849404729903, "median_completion_tokens": 512, "shas": ["6c8325fc787c", "6c8325fc787c", "6c8325fc787c"], "runs": [{"ttft_s": 0.17520710988901556, "decode_tok_s": 49.97067103463527, "completion_tokens": 512, "sha": "6c8325fc787c"}, {"ttft_s": 0.058294075075536966, "decode_tok_s": 62.88211715965607, "completion_tokens": 512, "sha": "6c8325fc787c"}, {"ttft_s": 0.05934849404729903, "decode_tok_s": 63.96255819353918, "completion_tokens": 512, "sha": "6c8325fc787c"}], "tokens_per_round": 1.762}
+CELL {"cell": "chat_sampled", "n": 3, "median_decode_tok_s": 66.2549816309275, "median_ttft_s": 0.06087897997349501, "median_completion_tokens": 504, "shas": ["da50b6c63b25", "da50b6c63b25", "da50b6c63b25"], "runs": [{"ttft_s": 0.12074326700530946, "decode_tok_s": 56.684925558268, "completion_tokens": 504, "sha": "da50b6c63b25"}, {"ttft_s": 0.06087897997349501, "decode_tok_s": 66.2549816309275, "completion_tokens": 504, "sha": "da50b6c63b25"}, {"ttft_s": 0.057507856050506234, "decode_tok_s": 67.25934483525573, "completion_tokens": 504, "sha": "da50b6c63b25"}], "tokens_per_round": 1.877}
+SUMMARY [
+ {
+  "cell": "code",
+  "n": 3,
+  "median_decode_tok_s": 111.57931772314384,
+  "median_ttft_s": 0.0644037218298763,
+  "median_completion_tokens": 512,
+  "shas": [
+   "7730f9bae00a",
+   "7730f9bae00a",
+   "7730f9bae00a"
+  ],
+  "tokens_per_round": 5.059
+ },
+ {
+  "cell": "prose_long",
+  "n": 3,
+  "median_decode_tok_s": 68.29488534991684,
+  "median_ttft_s": 0.06306843808852136,
+  "median_completion_tokens": 512,
+  "shas": [
+   "2ddcf28aa232",
+   "2ddcf28aa232",
+   "2ddcf28aa232"
+  ],
+  "tokens_per_round": 2.302
+ },
+ {
+  "cell": "json",
+  "n": 3,
+  "median_decode_tok_s": 137.11409745794657,
+  "median_ttft_s": 0.07821070402860641,
+  "median_completion_tokens": 768,
+  "shas": [
+   "c75bf29af5c0",
+   "c75bf29af5c0",
+   "c75bf29af5c0"
+  ],
+  "tokens_per_round": 7.102
+ },
+ {
+  "cell": "multilingual",
+  "n": 3,
+  "median_decode_tok_s": 62.88211715965607,
+  "median_ttft_s": 0.05934849404729903,
+  "median_completion_tokens": 512,
+  "shas": [
+   "6c8325fc787c",
+   "6c8325fc787c",
+   "6c8325fc787c"
+  ],
+  "tokens_per_round": 1.762
+ },
+ {
+  "cell": "chat_sampled",
+  "n": 3,
+  "median_decode_tok_s": 66.2549816309275,
+  "median_ttft_s": 0.06087897997349501,
+  "median_completion_tokens": 504,
+  "shas": [
+   "da50b6c63b25",
+   "da50b6c63b25",
+   "da50b6c63b25"
+  ],
+  "tokens_per_round": 1.877
+ }
+]

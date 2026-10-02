@@ -1,0 +1,41 @@
+ROW {"target": 8192, "prompt_tokens": 8224, "cold_ttft_s": 2.9058969060424715, "cold_prefill_tok_s": 2830.1072838816676, "resend_ttft_s": 0.07622082415036857, "resend_cached_tokens": 8223, "story_ttft_s": 0.1239201701246202, "story_cached_tokens": 8201, "story_decode_tok_s": 61.035098559629105, "story_completion_tokens": 256}
+ROW {"target": 32768, "prompt_tokens": 32921, "cold_ttft_s": 11.692284791963175, "cold_prefill_tok_s": 2815.61735672301, "resend_ttft_s": 0.107536390889436, "resend_cached_tokens": 32920, "story_ttft_s": 0.15160397812724113, "story_cached_tokens": 32898, "story_decode_tok_s": 66.07755286052983, "story_completion_tokens": 256}
+ROW {"target": 131072, "prompt_tokens": 131329, "cold_ttft_s": 55.24423272581771, "cold_prefill_tok_s": 2377.2436238149617, "resend_ttft_s": 0.24671469093300402, "resend_cached_tokens": 131328, "story_ttft_s": 0.28186068893410265, "story_cached_tokens": 131306, "story_decode_tok_s": 55.48661952509935, "story_completion_tokens": 256}
+SUMMARY [
+ {
+  "target": 8192,
+  "prompt_tokens": 8224,
+  "cold_ttft_s": 2.9058969060424715,
+  "cold_prefill_tok_s": 2830.1072838816676,
+  "resend_ttft_s": 0.07622082415036857,
+  "resend_cached_tokens": 8223,
+  "story_ttft_s": 0.1239201701246202,
+  "story_cached_tokens": 8201,
+  "story_decode_tok_s": 61.035098559629105,
+  "story_completion_tokens": 256
+ },
+ {
+  "target": 32768,
+  "prompt_tokens": 32921,
+  "cold_ttft_s": 11.692284791963175,
+  "cold_prefill_tok_s": 2815.61735672301,
+  "resend_ttft_s": 0.107536390889436,
+  "resend_cached_tokens": 32920,
+  "story_ttft_s": 0.15160397812724113,
+  "story_cached_tokens": 32898,
+  "story_decode_tok_s": 66.07755286052983,
+  "story_completion_tokens": 256
+ },
+ {
+  "target": 131072,
+  "prompt_tokens": 131329,
+  "cold_ttft_s": 55.24423272581771,
+  "cold_prefill_tok_s": 2377.2436238149617,
+  "resend_ttft_s": 0.24671469093300402,
+  "resend_cached_tokens": 131328,
+  "story_ttft_s": 0.28186068893410265,
+  "story_cached_tokens": 131306,
+  "story_decode_tok_s": 55.48661952509935,
+  "story_completion_tokens": 256
+ }
+]

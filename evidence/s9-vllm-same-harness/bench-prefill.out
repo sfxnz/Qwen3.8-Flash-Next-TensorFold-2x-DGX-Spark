@@ -1,0 +1,41 @@
+ROW {"target": 8192, "prompt_tokens": 8193, "cold_ttft_s": 2.7524025440216064, "cold_prefill_tok_s": 2976.672150589207, "resend_ttft_s": 0.640598754864186, "resend_cached_tokens": null, "story_ttft_s": 0.655221140012145, "story_cached_tokens": null, "story_decode_tok_s": 49.443568114773356, "story_completion_tokens": 256}
+ROW {"target": 32768, "prompt_tokens": 32841, "cold_ttft_s": 11.925381439970806, "cold_prefill_tok_s": 2753.874177133272, "resend_ttft_s": 1.0294933139812201, "resend_cached_tokens": null, "story_ttft_s": 1.0339572180528194, "story_cached_tokens": null, "story_decode_tok_s": 45.14947557489551, "story_completion_tokens": 256}
+ROW {"target": 131072, "prompt_tokens": 131559, "cold_ttft_s": 64.72735686786473, "cold_prefill_tok_s": 2032.5099983391299, "resend_ttft_s": 1.575045479927212, "resend_cached_tokens": null, "story_ttft_s": 1.5855780448764563, "story_cached_tokens": null, "story_decode_tok_s": 46.248384783316325, "story_completion_tokens": 256}
+SUMMARY [
+ {
+  "target": 8192,
+  "prompt_tokens": 8193,
+  "cold_ttft_s": 2.7524025440216064,
+  "cold_prefill_tok_s": 2976.672150589207,
+  "resend_ttft_s": 0.640598754864186,
+  "resend_cached_tokens": null,
+  "story_ttft_s": 0.655221140012145,
+  "story_cached_tokens": null,
+  "story_decode_tok_s": 49.443568114773356,
+  "story_completion_tokens": 256
+ },
+ {
+  "target": 32768,
+  "prompt_tokens": 32841,
+  "cold_ttft_s": 11.925381439970806,
+  "cold_prefill_tok_s": 2753.874177133272,
+  "resend_ttft_s": 1.0294933139812201,
+  "resend_cached_tokens": null,
+  "story_ttft_s": 1.0339572180528194,
+  "story_cached_tokens": null,
+  "story_decode_tok_s": 45.14947557489551,
+  "story_completion_tokens": 256
+ },
+ {
+  "target": 131072,
+  "prompt_tokens": 131559,
+  "cold_ttft_s": 64.72735686786473,
+  "cold_prefill_tok_s": 2032.5099983391299,
+  "resend_ttft_s": 1.575045479927212,
+  "resend_cached_tokens": null,
+  "story_ttft_s": 1.5855780448764563,
+  "story_cached_tokens": null,
+  "story_decode_tok_s": 46.248384783316325,
+  "story_completion_tokens": 256
+ }
+]

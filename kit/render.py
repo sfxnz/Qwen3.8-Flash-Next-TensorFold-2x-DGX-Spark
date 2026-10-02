@@ -1,4 +1,4 @@
-# vendored from sfxnz/forge kit @ b84e815
+# vendored from sfxnz/forge kit @ 3d294ff
 # Regenerate the marked blocks of run.sh and README.md from recipe.yaml.
 #
 #   python3 kit/render.py            rewrite the generated blocks in place
@@ -12,6 +12,9 @@
 #              <!-- END generated defaults -->
 #              <!-- BEGIN generated measured from recipe.yaml — edit recipe.yaml and run kit/render.py -->
 #              <!-- END generated measured -->
+#
+# The measured block is a `Conditions:` line, the decode table, and a numbered note for each row
+# that carries an optional `note`.
 #
 # Inside the run.sh block every NAME="${NAME:-value}" line takes its value from serve.env; comment and
 # derived lines are kept verbatim. serve.env must list exactly those names, in run.sh order. README
@@ -55,11 +58,24 @@ def find_block(lines, begin, end, path):
     return starts[0] + 1, stop
 
 
-def render_run_sh(text, env):
+def hub_dir(model_id):
+    return "models--" + model_id.replace("/", "--")
+
+
+def render_run_sh(text, env, model_id):
     lines = text.split("\n")
     start, stop = find_block(lines, RUN_BEGIN, RUN_END, "run.sh")
     body, seen = [], []
+    hub = hub_dir(model_id)
     for line in lines[start:stop]:
+        if line.startswith("SNAPSHOT="):
+            body.append(f'SNAPSHOT="${{HF_CACHE}}/hub/{hub}/snapshots/${{SNAPSHOT_SHA}}"')
+            continue
+        if line.startswith("SNAPSHOT_IN_CONTAINER="):
+            body.append(
+                f'SNAPSHOT_IN_CONTAINER="${{HF_HOME_IN_CONTAINER}}/hub/{hub}/snapshots/${{SNAPSHOT_SHA}}"'
+            )
+            continue
         m = DEFAULT_LINE.match(line)
         if not m:
             body.append(line)
@@ -94,11 +110,16 @@ def render_readme(text, recipe):
     rows = [f"| {fill(k, env)} | {fill(v, env)} |" for row in recipe["readme"]["defaults"] for k, v in row.items()]
     lines[start:stop] = DEFAULTS_HEADER + rows
     start, stop = find_block(lines, *md_markers("measured"), "README.md")
-    rows = [
-        f"| {r['phase']} | {r['concurrency']} | {r['decode']} | {r['aggregate']} | {r['ttft_p50']} s |"
-        for r in recipe["measured"]["decode"]["rows"]
-    ]
-    lines[start:stop] = MEASURED_HEADER + rows
+    decode = recipe["measured"]["decode"]
+    rows, notes = [], []
+    for r in decode["rows"]:
+        phase = r["phase"]
+        if r.get("note"):  # optional per-row caveat, rendered as a numbered note under the table
+            notes.append(r["note"])
+            phase = f"{phase} (note {len(notes)})"
+        rows.append(f"| {phase} | {r['concurrency']} | {r['decode']} | {r['aggregate']} | {r['ttft_p50']} s |")
+    notes = [""] + [f"{i}. {n}" for i, n in enumerate(notes, 1)] if notes else []
+    lines[start:stop] = [f"Conditions: {decode['conditions']}.", ""] + MEASURED_HEADER + rows + notes
     return "\n".join(lines)
 
 
@@ -122,7 +143,7 @@ def main():
     repo = Path(__file__).resolve().parent.parent
     recipe = yaml.load((repo / "recipe.yaml").read_text(), Loader=yaml.BaseLoader)
     renderers = {
-        "run.sh": lambda text: render_run_sh(text, recipe["serve"]["env"]),
+        "run.sh": lambda text: render_run_sh(text, recipe["serve"]["env"], recipe["model"]["id"]),
         "README.md": lambda text: render_readme(text, recipe),
     }
     stale = False
