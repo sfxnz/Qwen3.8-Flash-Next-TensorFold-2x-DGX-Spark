@@ -1,0 +1,7 @@
+   250000 @0.1 needle0: found (246227 tok, 122.855 s)
+   250000 @0.1 needle1: found (246226 tok, 123.052 s)
+   250000 @0.5 needle0: found (249640 tok, 124.692 s)
+   250000 @0.5 needle1: found (249640 tok, 124.882 s)
+   250000 @0.9 needle0: found (246179 tok, 122.379 s)
+   250000 @0.9 needle1: found (246180 tok, 122.75 s)
+T3 PASS 6/6 per_length={'250000': '6/6'}

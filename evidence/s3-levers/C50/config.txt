@@ -1,0 +1,1 @@
+TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_CONFIDENCE=0.50

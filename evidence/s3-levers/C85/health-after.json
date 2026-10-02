@@ -1,0 +1,1 @@
+{"ok": true, "backend": "tensorfold", "busy": false, "requests_running": 0, "requests_total": 36, "prompt_tokens_total": 1844, "completion_tokens_total": 12044, "prefill_seconds_total": 2.9091, "decode_seconds_total": 119.966, "cached_tokens_total": 1110, "rounds_total": 4237, "drafted_total": 9547, "accepted_total": 7792, "context_length": 262144}

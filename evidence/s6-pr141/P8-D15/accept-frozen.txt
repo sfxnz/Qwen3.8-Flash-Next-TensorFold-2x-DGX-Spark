@@ -1,0 +1,14 @@
+{
+ "requests_total": 18,
+ "completion_tokens_total": 2700,
+ "rounds_total": 621,
+ "drafted_total": 2502,
+ "accepted_total": 2061,
+ "decode_seconds_total": 28.0316,
+ "prefill_seconds_total": 0.5292000000000001,
+ "prompt_tokens_total": 648,
+ "cached_tokens_total": 595,
+ "tokens_per_round": 4.319,
+ "draft_hit_rate": 0.8237,
+ "decode_tok_s_server": 96.32
+}

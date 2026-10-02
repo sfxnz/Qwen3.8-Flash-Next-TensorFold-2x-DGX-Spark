@@ -1,94 +1,103 @@
 # Source of truth for the values that repeat across run.sh, README.md and CI.
 # Edit here, then `python3 kit/render.py`. CI runs `python3 kit/render.py --check`.
-# Every scalar is used as the string you typed (0.80 stays 0.80). `null` means none.
+# Every scalar is used as the string you typed (0.70 stays 0.70). `null` means none.
 # `&name` anchors a value; `*name` reuses it, so a pinned value is written once.
-# Replace every TODO. Keep the section order; render.py reads serve.env, readme.defaults, measured.decode.
 
 model:
-  id: &model TODO-org/TODO-model                 # Hugging Face repo id
-  revision: &revision TODO-40-hex-snapshot-sha   # the snapshot run.sh pins and downloads
-  served_name: &served_name TODO-org/TODO-model  # what /v1/models reports
-  family: TODO                                   # e.g. GLM-5.3-Flash
-  params: TODO total / TODO active               # e.g. 320B total / 18B active
-  quant: TODO                                    # e.g. NVFP4 (weight-only, routed experts)
+  id: &model TensorFold/Qwen3.8-Flash-Next-MLX-4bit-MTP
+  revision: &revision 2b170fa6309d5d1ee380b35636075fac7945f286
+  served_name: &served_name TensorFold/Qwen3.8-Flash-Next-MLX-4bit-MTP
+  family: Qwen3.8-Flash-Next
+  params: ~180B total MoE, 512 experts top-10, 1 MTP layer, hashed n-gram (PLE) tables
+  quant: MLX affine 4-bit, group 32, every linear incl. the n-gram tables and the MTP head (router bf16)
 
 image:
-  base: TODO-registry/TODO-image:TODO-tag        # the FROM line of docker/Dockerfile.*
-  digest: null                                   # sha256:... when the base is digest-pinned
-  local_tag: &image TODO-local-image-tag         # what `docker build -t` produces on both nodes
-  build: docker/Dockerfile.TODO                  # the Dockerfile chain, in order
+  base: nvcr.io/nvidia/pytorch:26.07-py3
+  digest: sha256:2140e699b3beaf7f96a0081fd9c9406bc3832b435cdb60dfa2d261f7d2f34a1c
+  local_tag: &image tf-qwen38-flashnext:0.6.2
+  build: docker/Dockerfile (pip install TensorFold at TF_SHA plus xgrammar 0.2.8; torch/triton from the base, checked)
 
 engine:
-  name: vllm
-  version: null                                  # the vLLM release inside the image, if the tag pins one
+  name: tensorfold
+  version: 0.6.2
+  repo: https://github.com/ashhart/TensorFold
+  commit: &tf_sha 56e2e3ec55bc0ae1d7d5158c4fa2c79a3567ab21
 
 hardware:
   shape: 2x DGX Spark (GB10)
-  nnodes: &nnodes 2
+  nnodes: 2
   tp: &tp 2
 
 serve:
   # The `# BEGIN generated` block of run.sh, in run.sh order. Each key renders as NAME="${NAME:-value}".
-  # Empty string means "not set; vLLM decides". Add a key here and its line in run.sh together.
   env:
     MODEL: *model
     SERVED_NAME: *served_name
     IMAGE: *image
-    CONTAINER_NAME: TODO-container-name
+    TF_SHA: *tf_sha
+    TF_PATCH: none
+    CONTAINER_NAME: tf-qwen38-flashnext
     PORT: 8000
-    MASTER_PORT: 29500
+    MASTER_PORT: 29551
     HEAD_IP: 10.100.8.1
     WORKER_HOST: spark2
     IFACE: enp1s0f1np1
-    HCA: rocep1s0f1
+    HCA: rocep1s0f1,roceP2p1s0f1
     TP: *tp
-    NNODES: *nnodes
-    MAX_MODEL_LEN: 32768
-    MAX_NUM_SEQS: 2
-    UTIL: 0.80
-    KV_CACHE_DTYPE: auto
-    KV_CACHE_MEMORY: ""
-    BLOCK_SIZE: ""
-    MAX_NUM_BATCHED_TOKENS: ""
-    SPEC_CONFIG: ""
-    COMPILATION_CONFIG: ""
-    ENFORCE_EAGER: 0
+    CONTEXT: 262144
+    KV_DTYPE: bf16
+    MTP_DRAFTS: 15
+    MTP_CONFIDENCE: 0.70
+    PARALLEL: 1
+    THINKING: 0
+    MAX_TOKENS: 4096
+    MEMORY_RESERVE_GIB: ""
     HF_CACHE: $HOME/.cache/huggingface
     SNAPSHOT_SHA: *revision
     SKIP_DOWNLOAD: 0
+    TF_CACHE: $HOME/.cache/tensorfold-qwen38
     ORCHESTRATE: auto
+    OOM_SCORE_ADJ: 1000
+    MEMGUARD: 1
+    MEMGUARD_MIN_AVAIL_MB: 3072
+    MEMGUARD_MIN_SWAP_FREE_MB: 2048
+    BENCH_ONLY: 0
     EXTRA_ARGS: ""
+    EXTRA_ENV: ""
 
 readme:
   # Rows of the README "Defaults" table. {NAME} is replaced by serve.env.NAME.
   defaults:
-    - Image: "`{IMAGE}` (local, built from `docker/`)"
-    - Model: "`{MODEL}`"
-    - Checkpoint: "`{SNAPSHOT_SHA}`"
-    - "`--tensor-parallel-size` / `--nnodes`": "{TP} / {NNODES}"
-    - "`--max-model-len`": "{MAX_MODEL_LEN}"
-    - "`--max-num-seqs`": "{MAX_NUM_SEQS}"
-    - "`--kv-cache-dtype`": "`{KV_CACHE_DTYPE}`"
-    - "`--kv-cache-memory`": "not pinned yet (`KV_CACHE_MEMORY` is empty; vLLM decides)"
-    - "`--block-size`": "vLLM default (`BLOCK_SIZE` is empty)"
-    - CUDA graphs: "on (`ENFORCE_EAGER=1` reverts to `--enforce-eager`)"
-    - Speculative: "none (`SPEC_CONFIG` is empty)"
-    - API: "`http://<head>:{PORT}/v1`"
+    - Engine: "TensorFold `{TF_SHA}` (v0.6.2), built into `{IMAGE}` from `docker/Dockerfile`"
+    - Model: "`{MODEL}` at `{SNAPSHOT_SHA}`"
+    - Ranks: "`--tp {TP}`: rank 1 on `{WORKER_HOST}` first, then rank 0 (HTTP) on the head; rendezvous `{HEAD_IP}:{MASTER_PORT}`"
+    - "`--context`": "{CONTEXT} (the native window, on both ranks)"
+    - "`--kv-dtype`": "`{KV_DTYPE}`"
+    - MTP drafts: "`--mtp-drafts {MTP_DRAFTS} --mtp-confidence {MTP_CONFIDENCE}`"
+    - "`--parallel`": "{PARALLEL} (0.6.2 serves one request at a time on two ranks)"
+    - Default thinking: "off (`THINKING={THINKING}`); requests override with `chat_template_kwargs.enable_thinking`"
+    - "`--max-tokens`": "{MAX_TOKENS} (the reply cap when a request sets none)"
+    - NCCL: "`NCCL_IB_HCA={HCA}`, `NCCL_SOCKET_IFNAME={IFACE}`"
+    - API: "`http://<head>:{PORT}/v1`, served as `{SERVED_NAME}`"
     - Container: "`{CONTAINER_NAME}`"
-    - Master port: "{MASTER_PORT}"
 
 measured:
   # The README decode table. One row per (phase, concurrency); a row's three numbers come from one
   # bench_decode.py run. evidence: the file under evidence/ that contains them, or null while there is none.
   decode:
-    conditions: streamed greedy, thinking off, 200 completion tokens, 3-run median; TODO pin, context, drafter, graphs
+    conditions: streamed greedy, thinking off, max_tokens 200 (prose ends at EOS near 100), 3-run median; TensorFold 0.6.2 at TP=2, context 262144, kv bf16, MTP up to 15 drafts at confidence 0.70, 4.33 tokens per verify round; second gate on the boot (the first after a boot measured up to 5% lower while graphs for each context bucket are captured)
     units: {decode: tok/s per stream (median), aggregate: tok/s, ttft_p50: s}
     rows:
-      - {phase: prose, concurrency: 1, decode: TODO, aggregate: TODO, ttft_p50: TODO, evidence: null}
-      - {phase: prose, concurrency: 2, decode: TODO, aggregate: TODO, ttft_p50: TODO, evidence: null}
-      - {phase: structured, concurrency: 1, decode: TODO, aggregate: TODO, ttft_p50: TODO, evidence: null}
-      - {phase: structured, concurrency: 2, decode: TODO, aggregate: TODO, ttft_p50: TODO, evidence: null}
+      - {phase: prose, concurrency: 1, decode: 69.6, aggregate: 69.6, ttft_p50: 0.06, evidence: evidence/s7-default/rerun/bench-frozen.out}
+      - {phase: prose, concurrency: 2, decode: 70.0, aggregate: 92.1, ttft_p50: 0.78, evidence: evidence/s7-default/rerun/bench-frozen.out,
+         note: "TensorFold 0.6.2 serves one request at a time on two ranks. At c=2 the second stream waits for the first, which is its TTFT, and bench_decode's aggregate (tokens / (wall − median TTFT)) is not concurrent throughput. The --parallel profile serves both together (Concurrency)."}
+      - {phase: structured, concurrency: 1, decode: 249.5, aggregate: 249.3, ttft_p50: 0.07, evidence: evidence/s7-default/rerun/bench-frozen.out}
+      - {phase: structured, concurrency: 2, decode: 246.8, aggregate: 317.5, ttft_p50: 0.49, evidence: evidence/s7-default/rerun/bench-frozen.out,
+         note: "Same as note 1."}
 
 links:
-  model: https://huggingface.co/TODO-org/TODO-model
-  repo: https://github.com/TODO-user/TODO-repo
+  model: https://huggingface.co/TensorFold/Qwen3.8-Flash-Next-MLX-4bit-MTP
+  engine: https://github.com/ashhart/TensorFold
+  base_image: https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch
+  repo: https://github.com/sfxnz/Qwen3.8-Flash-Next-TensorFold-2x-DGX-Spark
+  sibling_vllm: https://github.com/sfxnz/Qwen3.8-Flash-Next-NVFP4-vLLM-2x-DGX-Spark

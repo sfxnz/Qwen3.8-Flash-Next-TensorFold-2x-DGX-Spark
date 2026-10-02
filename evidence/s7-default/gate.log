@@ -1,0 +1,18 @@
+2026-10-02T15:59:00.034Z session_gate: evidence dir /home/sfxnz/projects/ai-lab/recipes/Qwen3.8-Flash-Next-2x-DGX-Spark-TensorFold/evidence/s7-default
+2026-10-02T15:59:00.430Z session_gate: start smoke-thinking
+2026-10-02T15:59:00.648Z session_gate: end smoke-thinking rc=0
+2026-10-02T15:59:00.650Z session_gate: start smoke-tools
+2026-10-02T15:59:01.213Z session_gate: end smoke-tools rc=0
+2026-10-02T15:59:01.214Z session_gate: start smoke-count
+2026-10-02T15:59:05.066Z session_gate: end smoke-count rc=0
+2026-10-02T15:59:05.074Z session_gate: start bench-frozen
+2026-10-02T15:59:26.492Z session_gate: end bench-frozen rc=0
+2026-10-02T15:59:26.513Z session_gate: start bench-cells
+2026-10-02T16:00:57.874Z session_gate: end bench-cells rc=0
+finished_at=2026-10-02T16:00:58.756Z
+smoke-thinking=0
+smoke-tools=0
+smoke-count=0
+bench-frozen=0
+bench-cells=0
+GATE=PASS

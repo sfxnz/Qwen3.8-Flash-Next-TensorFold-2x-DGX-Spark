@@ -1,0 +1,51 @@
+url=http://127.0.0.1:8000/v1/chat/completions model=TensorFold/Qwen3.8-Flash-Next-MLX-4bit-MTP max_tokens=200 runs=3 concurrency=[1, 2] phases=['prose', 'structured']
+phase=prose c=1 run=1 wall=1.52s agg=70.41 tok/s per_stream=[70.45] ttft=[0.116]
+phase=prose c=1 run=2 wall=1.46s agg=70.47 tok/s per_stream=[70.50] ttft=[0.057]
+phase=prose c=1 run=3 wall=1.46s agg=70.23 tok/s per_stream=[70.27] ttft=[0.055]
+phase=prose c=2 run=1 wall=2.93s agg=92.45 tok/s per_stream=[70.34,70.19] ttft=[0.055,1.516]
+phase=prose c=2 run=2 wall=2.94s agg=92.07 tok/s per_stream=[70.35,69.76] ttft=[0.055,1.517]
+phase=prose c=2 run=3 wall=2.91s agg=92.92 tok/s per_stream=[70.53,70.71] ttft=[0.054,1.514]
+phase=structured c=1 run=1 wall=0.90s agg=250.03 tok/s per_stream=[250.17] ttft=[0.108]
+phase=structured c=1 run=2 wall=0.85s agg=249.49 tok/s per_stream=[249.68] ttft=[0.056]
+phase=structured c=1 run=3 wall=0.87s agg=244.82 tok/s per_stream=[245.04] ttft=[0.054]
+phase=structured c=2 run=1 wall=1.76s agg=315.72 tok/s per_stream=[241.32,243.62] ttft=[0.056,0.941]
+phase=structured c=2 run=2 wall=1.72s agg=323.81 tok/s per_stream=[248.15,248.93] ttft=[0.060,0.917]
+phase=structured c=2 run=3 wall=1.72s agg=321.33 tok/s per_stream=[247.12,246.11] ttft=[0.054,0.913]
+SUMMARY [
+  {
+    "phase": "prose",
+    "concurrency": 1,
+    "median_decode_tok_s": 70.44643347552876,
+    "median_ttft_s": 0.056794365867972374,
+    "median_agg_tok_s": 70.41368886780845,
+    "median_completion_tokens": 100,
+    "n": 3
+  },
+  {
+    "phase": "prose",
+    "concurrency": 2,
+    "median_decode_tok_s": 70.34440948371343,
+    "median_ttft_s": 0.7845878514926881,
+    "median_agg_tok_s": 92.44615332542641,
+    "median_completion_tokens": 100.0,
+    "n": 6
+  },
+  {
+    "phase": "structured",
+    "concurrency": 1,
+    "median_decode_tok_s": 249.6821806081586,
+    "median_ttft_s": 0.05564559600315988,
+    "median_agg_tok_s": 249.48776248193477,
+    "median_completion_tokens": 200,
+    "n": 3
+  },
+  {
+    "phase": "structured",
+    "concurrency": 2,
+    "median_decode_tok_s": 246.61198526458855,
+    "median_ttft_s": 0.48662235494703054,
+    "median_agg_tok_s": 321.33260749017853,
+    "median_completion_tokens": 200.0,
+    "n": 6
+  }
+]

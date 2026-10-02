@@ -1,0 +1,9 @@
+ts	phase	decision	why	evidence	result
+2026-10-02T14:13Z	s1	first TP=2 boot by hand	prove TensorFold serves the pair before writing run.sh	evidence/s1-first-boot	pass
+2026-10-02T14:24Z	s2	baseline through run.sh + gate	reference for one-knob levers	evidence/s2-baseline	B0
+2026-10-02T14:27Z	s3	sweep HCA, NCCL proto, depth, confidence	find levers that beat noise	evidence/s3-levers	depth only
+2026-10-02T14:55Z	s4	depth 8-15 with repeats	pick the depth	evidence/s4-depth	15 adopted
+2026-10-02T15:27Z	s5	depth 6 vs 15 at long context	check the depth has no long-context cost	evidence/s5-longctx	none
+2026-10-02T15:40Z	s6	PR-141 port, two-rank --parallel	multi-user throughput	evidence/s6-pr141	opt-in profile
+2026-10-02T16:40Z	s7	final image and default gate	published numbers	evidence/s7-default	pass
+2026-10-02T17:13Z	s8	T2 + T3 quality	report against the vLLM sibling	evidence/s8-quality	see SUMMARY

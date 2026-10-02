@@ -1,0 +1,9 @@
+# id   run.sh variables (TF_CACHE points at the lab's JIT cache; every other value is the default unless named)
+P-LL   TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache EXTRA_ENV=NCCL_PROTO=LL
+P-LL128 TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache EXTRA_ENV=NCCL_PROTO=LL128
+D4     TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=4
+D8     TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=8
+D10    TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_DRAFTS=10
+C50    TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_CONFIDENCE=0.50
+C85    TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache MTP_CONFIDENCE=0.85
+B0b    TF_CACHE=/home/sfxnz/projects/data/tensorfold-qwen38/cache

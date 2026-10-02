@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Streamed decode bench against a live OpenAI-compatible /v1/chat/completions.
-
-Copied from sfxnz/DeepSeek-V4-Flash-Vision-Exp-vLLM-2x-DGX-Spark @ 025544a. Model-specific
-pieces are CHAT_TEMPLATE_KWARGS and the --model default.
-"""
+"""Streamed decode bench against a live OpenAI-compatible /v1/chat/completions."""
 
 from __future__ import annotations
 
@@ -30,10 +26,6 @@ PHASES = {
     ),
 }
 
-# TODO: the kwargs that turn thinking off for this model, e.g. {"enable_thinking": False} (GLM)
-# or {"thinking": False, "reasoning_effort": "low"} (DeepSeek). The bench measures thinking-off decode.
-CHAT_TEMPLATE_KWARGS: dict = {}
-
 
 def stream_one(url: str, model: str, prompt: str, max_tokens: int) -> dict:
     body = json.dumps(
@@ -44,7 +36,7 @@ def stream_one(url: str, model: str, prompt: str, max_tokens: int) -> dict:
             "temperature": 0,
             "stream": True,
             "stream_options": {"include_usage": True},
-            "chat_template_kwargs": CHAT_TEMPLATE_KWARGS,
+            "chat_template_kwargs": {"enable_thinking": False},
         }
     ).encode()
     req = urllib.request.Request(
@@ -112,8 +104,8 @@ def wave(
                 errors.append(exc)
     if errors:
         raise RuntimeError(f"{len(errors)} stream(s) in the wave failed")
-    if not out:
-        raise RuntimeError("every stream in the wave failed")
+    if len(out) != concurrency:
+        raise RuntimeError(f"expected {concurrency} streams, got {len(out)}")
     if any(int(r["completion_tokens"]) == 0 for r in out):
         raise RuntimeError("a stream returned completion_tokens==0")
     wall = time.perf_counter() - t0
@@ -177,7 +169,7 @@ def acceptance(before: dict[str, float] | None, after: dict[str, float] | None) 
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--url", default="http://127.0.0.1:8000/v1/chat/completions")
-    p.add_argument("--model", default="TODO-org/TODO-model")
+    p.add_argument("--model", default="nvidia/Qwen3.8-Flash-Next-NVFP4")
     p.add_argument("--max-tokens", type=int, default=200)
     p.add_argument("--runs", type=int, default=3)
     p.add_argument("--concurrency", type=int, nargs="+", default=[1, 2])

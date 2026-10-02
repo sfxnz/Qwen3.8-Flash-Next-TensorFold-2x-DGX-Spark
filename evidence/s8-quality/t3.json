@@ -1,0 +1,14 @@
+{
+ "pass": true,
+ "found": 24,
+ "total": 24,
+ "gated_found": 24,
+ "gated_total": 24,
+ "per_length": {
+  "4096": "6/6",
+  "16384": "6/6",
+  "65536": "6/6",
+  "131072": "6/6"
+ },
+ "rule": "all needles at <= 131072 found; overall misses <= 2"
+}

@@ -1,0 +1,13 @@
+REQ {"ttft_s": 0.12193216499872506, "decode_tok_s": 65.1286133929261, "completion_tokens": 256}
+REQ {"ttft_s": 0.10887596406973898, "decode_tok_s": 48.17217448722964, "completion_tokens": 256}
+REQ {"ttft_s": 0.1095982389524579, "decode_tok_s": 47.72515491624374, "completion_tokens": 256}
+REQ {"ttft_s": 0.11129714106209576, "decode_tok_s": 49.756979680857405, "completion_tokens": 256}
+REQ {"ttft_s": 0.10891338996589184, "decode_tok_s": 49.32597878053939, "completion_tokens": 256}
+REQ {"ttft_s": 0.10741618508473039, "decode_tok_s": 46.96189216398403, "completion_tokens": 256}
+REQ {"ttft_s": 0.10791057092137635, "decode_tok_s": 45.66902100774325, "completion_tokens": 256}
+REQ {"ttft_s": 0.11159304808825254, "decode_tok_s": 54.92050421323054, "completion_tokens": 256}
+REQ {"ttft_s": 0.11448427313007414, "decode_tok_s": 52.712802400859744, "completion_tokens": 256}
+REQ {"ttft_s": 0.10824758093804121, "decode_tok_s": 52.358261301446376, "completion_tokens": 256}
+REQ {"ttft_s": 0.10644376790151, "decode_tok_s": 50.84391386281199, "completion_tokens": 256}
+REQ {"ttft_s": 0.10942020989023149, "decode_tok_s": 53.2853701484664, "completion_tokens": 256}
+SUMMARY {"n": 12, "median_decode_tok_s": 50.3004467718347, "median_ttft_s": 0.10916679992806166}
